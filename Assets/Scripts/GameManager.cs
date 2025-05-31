@@ -9,12 +9,14 @@ public class GameManager : MonoBehaviour
     private InputManager input;
     private Player player;
 
-    // Only script on the scene using awake 
     private void Awake()
     {
         input = FindFirstObjectByType<InputManager>();
         input.SetupActionMap();
+    }
 
+    private void Start()
+    {
         player = Instantiate(playerPrefab, initalSpawnPoint);
         player.Setup(input);
     }

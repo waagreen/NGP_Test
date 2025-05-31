@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class CameraPlayerFollow : MonoBehaviour
 {
-    [SerializeField] private float smoothTime = 2f;
+    [SerializeField, Range(0f, 1f)] private float smoothTime = 1f;
     [SerializeField] private float maxSpeed = 10f;
     [SerializeField] private float cameraDistance = 10f;
 

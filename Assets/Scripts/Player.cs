@@ -7,6 +7,10 @@ public class Player : MonoBehaviour
     [SerializeField, Range(1f, 50f)] private float maxSpeed = 10f;
     [SerializeField, Range(10f, 100f)] private float acceleration = 1f;
 
+    [Header("Shoot setting")]
+    [SerializeField] private Transform aim;
+    [SerializeField] private Projectile projectilePrefab;
+
     // Assigned once per instance
     private Rigidbody2D rb;
     private Collider2D col;
@@ -16,6 +20,8 @@ public class Player : MonoBehaviour
     // Updated at runtime
     private Vector2 velocity;
     private Vector2 desiredVelocity;
+    private Vector2 shootDirection;
+    private float lastShootTime;
 
     public void Setup(InputManager input)
     {
@@ -27,6 +33,7 @@ public class Player : MonoBehaviour
         rb.gravityScale = 0;
 
         col = GetComponent<Collider2D>();
+        CompositeObjectPooler.Instance.InitializeNewQueue(projectilePrefab, 30);
 
         isSet = true;
     }
@@ -42,13 +49,27 @@ public class Player : MonoBehaviour
         velocity = new(newX, newY);
     }
 
+    private void HandleShoots()
+    {
+        if (shootDirection == Vector2.zero) return;
+        if ((Time.time - lastShootTime < projectilePrefab.Cooldown) && (lastShootTime != 0)) return;
+
+        lastShootTime = Time.time;
+        Projectile p = CompositeObjectPooler.Instance.GetObject(projectilePrefab) as Projectile;
+        p.transform.position = transform.position;
+        p.ApplyImpulse(shootDirection);
+    }
+
     private void Update()
     {
         desiredVelocity = input.Movement * maxSpeed;
+        shootDirection = input.Shoot;
     }
 
     private void FixedUpdate()
     {
+        HandleShoots();
+
         AdjustVelocity();
         rb.linearVelocity = velocity;
     }
