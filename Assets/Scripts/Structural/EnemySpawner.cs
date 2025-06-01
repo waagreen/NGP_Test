@@ -20,7 +20,11 @@ public class EnemySpawner : MonoBehaviour
     {
         killedEnemy.OnDeath -= UpdateBodyCount;
         enemyCount = Mathf.Max(0, enemyCount - 1);
-        if (enemyCount == 0) OnWaveClear.Invoke();
+        if (enemyCount == 0)
+        {
+            // OnWaveClear.Invoke();
+            Spawn();
+        }
     }
 
     private void Spawn()

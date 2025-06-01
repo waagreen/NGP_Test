@@ -47,6 +47,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 563a6b4db9039be44ae72d885eb821c6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  health: 3
   maxSpeed: 5
   acceleration: 40
   projectilePrefab: {fileID: 1725768585554162720, guid: 31e6b08b24d8b7343a11e9e73acf11c6, type: 3}
@@ -145,8 +146,8 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 0.2, y: 0.2, z: 0.2}
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 6461716731676006635}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -194,12 +195,12 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: -556131383524642219, guid: 8e6119f92522bf1498534ecaccfa0a31, type: 3}
+  m_Sprite: {fileID: -7338403121974390341, guid: 0ff61bd5272929d4a81e32ac499b8fb0, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 1, y: 1}
+  m_Size: {x: 5.12, y: 5.06}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
