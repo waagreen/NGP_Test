@@ -25,6 +25,8 @@ public class Enemy : PoolableObject
     private Vector2 velocity;
     private float currentMaxSpeed;
 
+    public System.Action<Enemy> OnDeath;
+
     private void BounceOnObstacle(Collision2D collision)
     {
         // Upon hiting a obstacle, turn in the oposite direction with a little randomness
@@ -65,7 +67,11 @@ public class Enemy : PoolableObject
         else if ((hurtMask & 1 << (collision.gameObject.layer)) != 0)
         {
             health--;
-            if (health < 1) Return();
+            if (health < 1)
+            {
+                Return();
+                OnDeath.Invoke(this);
+            }
         }
 
     }

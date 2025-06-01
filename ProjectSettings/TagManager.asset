@@ -14,8 +14,8 @@ TagManager:
   - Obstacles
   - Enemies
   - Player
-  - 
-  - 
+  - EnemyProjectiles
+  - PlayerProjectiles
   - 
   - 
   - 

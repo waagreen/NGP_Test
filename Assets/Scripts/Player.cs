@@ -65,7 +65,7 @@ public class Player : MonoBehaviour
     private void HandleShoots()
     {
         if (shootDirection == Vector2.zero) return;
-        if ((lastShootTime != 0) && (Time.time - lastShootTime < projectilePrefab.Cooldown)) return;
+        if ((lastShootTime != 0) && (Time.time < (lastShootTime + projectilePrefab.Cooldown))) return;
 
         lastShootTime = Time.time;
         Projectile p = CompositeObjectPooler.Instance.GetObject(projectilePrefab) as Projectile;
@@ -104,7 +104,7 @@ public class Player : MonoBehaviour
     private void OnCollisionEnter2D(Collision2D collision)
     {
         if ((hurtLayer & (1 << collision.gameObject.layer)) == 0) return;
-        if ((lastHitTime != 0) && Time.time - lastHitTime < invincibilityTime) return;
+        if ((lastHitTime != 0) && Time.time < (lastHitTime + invincibilityTime)) return;
 
         health = Math.Max(0, health - 1);
         OnHurt.Invoke(health);

@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class CompositeObjectPooler : MonoBehaviour
 {
-    private Dictionary<string, Queue<PoolableObject>> pools = new();
+    private readonly Dictionary<string, Queue<PoolableObject>> pools = new();
 
     // Only one instance of the pooler can exist at time
     private static CompositeObjectPooler _instance;
@@ -12,12 +12,12 @@ public class CompositeObjectPooler : MonoBehaviour
     {
         get
         {
-            // Se não existe instância, tenta encontrar uma na cena
+            // If instance is null, try to find one in the scene
             if (_instance == null)
             {
                 _instance = FindFirstObjectByType<CompositeObjectPooler>();
                 
-                // Se ainda não existe, cria uma nova
+                // If that fails, create one
                 if (_instance == null)
                 {
                     GameObject singletonObject = new (typeof(CompositeObjectPooler).Name);
