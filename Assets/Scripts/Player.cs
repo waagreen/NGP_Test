@@ -1,15 +1,23 @@
+using System;
+using DG.Tweening;
 using UnityEngine;
 
 [RequireComponent(typeof(Collider2D), typeof(Rigidbody2D))]
 public class Player : MonoBehaviour
 {
+    [SerializeField] private int health = 3;
+    
     [Header("Movement settings")]
     [SerializeField, Range(1f, 50f)] private float maxSpeed = 10f;
     [SerializeField, Range(10f, 100f)] private float acceleration = 1f;
 
     [Header("Shoot setting")]
-    [SerializeField] private Transform aim;
     [SerializeField] private Projectile projectilePrefab;
+
+    [Header("Detection Setting")]
+    [SerializeField] private float invincibilityTime = 1f;
+    [SerializeField] private LayerMask hurtLayer;
+    [SerializeField] private SpriteRenderer sRenderer;
 
     // Assigned once per instance
     private Rigidbody2D rb;
@@ -22,6 +30,11 @@ public class Player : MonoBehaviour
     private Vector2 desiredVelocity;
     private Vector2 shootDirection;
     private float lastShootTime;
+    private float lastHitTime;
+
+    private Sequence hurtSequence;
+
+    public Action<int> OnHurt;
 
     public void Setup(InputManager input)
     {
@@ -52,12 +65,26 @@ public class Player : MonoBehaviour
     private void HandleShoots()
     {
         if (shootDirection == Vector2.zero) return;
-        if ((Time.time - lastShootTime < projectilePrefab.Cooldown) && (lastShootTime != 0)) return;
+        if ((lastShootTime != 0) && (Time.time - lastShootTime < projectilePrefab.Cooldown)) return;
 
         lastShootTime = Time.time;
         Projectile p = CompositeObjectPooler.Instance.GetObject(projectilePrefab) as Projectile;
         p.transform.position = transform.position;
         p.ApplyImpulse(shootDirection);
+    }
+
+    private void HurtSequence()
+    {
+        hurtSequence?.Kill();
+        hurtSequence = DOTween.Sequence();
+
+        hurtSequence.Append(transform.DOPunchScale(Vector3.one * 0.4f, 0.13f));
+        hurtSequence.Join(sRenderer.DOColor(Color.red, 0.13f));
+        hurtSequence.Join(transform.DORotate(Vector3.forward * 20f, 0.13f));
+        hurtSequence.Append(sRenderer.DOColor(Color.white, 0.1f));
+        hurtSequence.Join(transform.DORotate(Vector3.zero, 0.13f));
+
+        hurtSequence.Play();
     }
 
     private void Update()
@@ -72,5 +99,17 @@ public class Player : MonoBehaviour
 
         AdjustVelocity();
         rb.linearVelocity = velocity;
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if ((hurtLayer & (1 << collision.gameObject.layer)) == 0) return;
+        if ((lastHitTime != 0) && Time.time - lastHitTime < invincibilityTime) return;
+
+        health = Math.Max(0, health - 1);
+        OnHurt.Invoke(health);
+        lastHitTime = Time.time;
+
+        HurtSequence();
     }
 }

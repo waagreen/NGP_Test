@@ -3,6 +3,8 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody2D), typeof(CircleCollider2D))]
 public class Enemy : PoolableObject
 {
+    [SerializeField] private int health = 2;
+
     [Header("Movement setting")]
     [SerializeField, Range(1f, 5f)] private float maxSpeed = 2f;
     [SerializeField, Range(1f, 50f)] private float acceleration = 25f;
@@ -11,7 +13,9 @@ public class Enemy : PoolableObject
     [Header("Perception Setting")]
     [SerializeField] private LayerMask targetMask = -1;
     [SerializeField] private LayerMask obstacleMask = -1;
+    [SerializeField] private LayerMask hurtMask = -1;
     [SerializeField] private float perceptionRadius = 4f;
+
 
     private Rigidbody2D rb;
     private CircleCollider2D col;
@@ -20,6 +24,22 @@ public class Enemy : PoolableObject
     private Vector2 currentDirection;
     private Vector2 velocity;
     private float currentMaxSpeed;
+
+    private void BounceOnObstacle(Collision2D collision)
+    {
+        // Upon hiting a obstacle, turn in the oposite direction with a little randomness
+        rb.linearVelocity = Vector2.zero;
+        Vector2 newDirection = Vector2.zero;
+        for (int i = 0; i < collision.contactCount; i++)
+        {
+            newDirection += collision.GetContact(i).normal;
+        }
+
+        if (Mathf.Abs(newDirection.x) < 0.01f) newDirection.x = Random.Range(-0.5f, 0.5f);
+        if (Mathf.Abs(newDirection.y) < 0.01f) newDirection.y = Random.Range(-0.5f, 0.5f);
+
+        currentDirection = newDirection.normalized;
+    }
 
     private void OnEnable()
     {
@@ -38,20 +58,16 @@ public class Enemy : PoolableObject
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        if ((obstacleMask & 1 << (collision.gameObject.layer)) == 0) return;
-
-        // Upon hiting a obstacle, turn in the oposite direction with a little randomness
-        rb.linearVelocity = Vector2.zero;
-        Vector2 newDirection = Vector2.zero;
-        for (int i = 0; i < collision.contactCount; i++)
+        if ((obstacleMask & 1 << (collision.gameObject.layer)) != 0)
         {
-            newDirection += collision.GetContact(i).normal;
+            BounceOnObstacle(collision);
+        }
+        else if ((hurtMask & 1 << (collision.gameObject.layer)) != 0)
+        {
+            health--;
+            if (health < 1) gameObject.SetActive(false);
         }
 
-        if (Mathf.Abs(newDirection.x) < 0.01f) newDirection.x = Random.Range(-0.5f, 0.5f);
-        if (Mathf.Abs(newDirection.y) < 0.01f) newDirection.y = Random.Range(-0.5f, 0.5f);
-
-        currentDirection = newDirection.normalized;
     }
 
     private void OnTriggerEnter2D(Collider2D collision)

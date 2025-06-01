@@ -49,8 +49,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxSpeed: 5
   acceleration: 40
-  aim: {fileID: 0}
   projectilePrefab: {fileID: 1725768585554162720, guid: 31e6b08b24d8b7343a11e9e73acf11c6, type: 3}
+  invincibilityTime: 1
+  hurtLayer:
+    serializedVersion: 2
+    m_Bits: 128
+  sRenderer: {fileID: 5678271261569793269}
 --- !u!58 &6922830776713933120
 CircleCollider2D:
   m_ObjectHideFlags: 0

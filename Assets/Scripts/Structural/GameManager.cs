@@ -6,6 +6,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Player playerPrefab;
     [SerializeField] private Transform initalSpawnPoint;
 
+    private UIManager uI;
     private InputManager input;
     private Player player;
 
@@ -13,11 +14,15 @@ public class GameManager : MonoBehaviour
     {
         input = FindFirstObjectByType<InputManager>();
         input.SetupActionMap();
+
+        uI = FindFirstObjectByType<UIManager>();
+
+        player = Instantiate(playerPrefab, initalSpawnPoint);
+        uI.Setup(player);
     }
 
     private void Start()
     {
-        player = Instantiate(playerPrefab, initalSpawnPoint);
         player.Setup(input);
     }
 }
