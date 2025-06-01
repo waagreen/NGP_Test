@@ -111,5 +111,7 @@ public class Player : MonoBehaviour
         lastHitTime = Time.time;
 
         HurtSequence();
+
+        if (health == 0) gameObject.SetActive(false);
     }
 }

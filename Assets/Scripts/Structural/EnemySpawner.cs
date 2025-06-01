@@ -4,26 +4,39 @@ using UnityEngine;
 public class EnemySpawner : MonoBehaviour
 {
     [SerializeField] private float spawnRadius = 10f;
-    [SerializeField] private float spawnInterval = 3f;
+    [SerializeField] private float spawnInterval = 10f;
     [SerializeField] private int increasePerWave = 2;
     [SerializeField] private List<Enemy> aviableEnemies;
+    [SerializeField] private float initialTime = 60f;
+    [SerializeField] private float timeBonus = 30f;
 
     private const int kPooledAmount = 30;
 
     private int enemyCount;
     private int amountToSpawn;
     private float lastSpawnTime;
+    private float currentTime;
+    private bool gameOver = false;
+
+    public float SpawnInterval => spawnInterval;
+    public float LastSpawnTime => lastSpawnTime;
+    public float CurrentTime => currentTime;
 
     public System.Action OnWaveClear;
+    public System.Action OnGameOver;
 
     private void UpdateBodyCount(Enemy killedEnemy)
     {
         killedEnemy.OnDeath -= UpdateBodyCount;
         enemyCount = Mathf.Max(0, enemyCount - 1);
+
         if (enemyCount == 0)
         {
-            // OnWaveClear.Invoke();
-            Spawn();
+            // Adds time for a wave clear
+            currentTime += timeBonus;
+
+            OnWaveClear?.Invoke();
+            Spawn(); // Immediately spawn next wave
         }
     }
 
@@ -49,6 +62,7 @@ public class EnemySpawner : MonoBehaviour
     private void Start()
     {
         amountToSpawn = increasePerWave;
+        currentTime = initialTime;
 
         foreach (Enemy e in aviableEnemies)
         {
@@ -60,9 +74,23 @@ public class EnemySpawner : MonoBehaviour
 
     private void Update()
     {
-        if (Time.time < (lastSpawnTime + spawnInterval)) return;
+        if (gameOver) return;
 
-        Spawn();
+        currentTime -= Time.deltaTime;
+
+        if (currentTime <= 0)
+        {
+            currentTime = 0;
+            gameOver = true;
+            OnGameOver?.Invoke();
+            return;
+        }
+
+        // Spawn at regular intervals
+        if (Time.time >= (lastSpawnTime + spawnInterval))
+        {
+            Spawn();
+        }
     }
 
     void OnDrawGizmosSelected()

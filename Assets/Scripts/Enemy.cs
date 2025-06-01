@@ -29,6 +29,13 @@ public class Enemy : PoolableObject
 
     public System.Action<Enemy> OnDeath;
 
+    private void FreezeBehaviour()
+    {
+        // Remove from enemies layer and freeze behaviour
+        gameObject.layer = 0;
+        isActive = false;
+        rb.bodyType = RigidbodyType2D.Static;
+    }
 
     public void InitializeBehaviour()
     {
@@ -55,27 +62,35 @@ public class Enemy : PoolableObject
         currentDirection = newDirection.normalized;
     }
 
-    private void Start()
+    private void Awake()
     {
-        if (rb == null) rb = GetComponent<Rigidbody2D>();
-        if (col == null) col = GetComponent<CircleCollider2D>();
+        if (rb == null)
+        {
+            rb = GetComponent<Rigidbody2D>();
+            rb.gravityScale = 0f;
+        }
+        if (col == null)
+        {
+            col = GetComponent<CircleCollider2D>();
+            col.radius = perceptionRadius;
+            col.isTrigger = true;
+        }
         if (originalLayer == -1) originalLayer = gameObject.layer;
 
-        // Remove from enemies layer and freeze behaviour
-        gameObject.layer = 0;
-        isActive = false;
+        FreezeBehaviour();
+    }
 
+    private void Start()
+    {
         // Reset state variables
         currentHealth = maxHealth;
-
-        rb.gravityScale = 0f;
-        rb.bodyType = RigidbodyType2D.Static;
-
-        col.radius = perceptionRadius;
-        col.isTrigger = true;
-
         currentDirection = new(Random.Range(-1f, 1f), Random.Range(-1f, 1f));
         currentMaxSpeed = maxSpeed;
+    }
+
+    private void OnDisable()
+    {
+        FreezeBehaviour();
     }
 
     private void OnCollisionEnter2D(Collision2D collision)

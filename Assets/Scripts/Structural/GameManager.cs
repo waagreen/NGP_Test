@@ -8,6 +8,7 @@ public class GameManager : MonoBehaviour
 
     private UIManager uI;
     private InputManager input;
+    private EnemySpawner spawner;
     private Player player;
 
     private void Awake()
@@ -15,10 +16,11 @@ public class GameManager : MonoBehaviour
         input = FindFirstObjectByType<InputManager>();
         input.SetupActionMap();
 
+        spawner = FindFirstObjectByType<EnemySpawner>();
         uI = FindFirstObjectByType<UIManager>();
 
         player = Instantiate(playerPrefab, initalSpawnPoint);
-        uI.Setup(player);
+        uI.Setup(player, spawner);
     }
 
     private void Start()
