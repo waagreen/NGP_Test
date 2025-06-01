@@ -11,9 +11,6 @@ public class EnemySpawner : MonoBehaviour
 
     [Header("Enemies settings")]
     [SerializeField] private List<Enemy> aviableEnemies;
-    [SerializeField] private PickableItem pickablePrefab;
-
-    private const int kPooledAmount = 30;
 
     private int enemyCount;
     private int amountToSpawn;
@@ -67,11 +64,9 @@ public class EnemySpawner : MonoBehaviour
         amountToSpawn = increasePerWave;
         currentTime = initialTime;
 
-        CompositeObjectPooler.Instance.InitializeNewQueue(pickablePrefab, kPooledAmount);
-
         foreach (Enemy e in aviableEnemies)
         {
-            CompositeObjectPooler.Instance.InitializeNewQueue(e, kPooledAmount);
+            CompositeObjectPooler.Instance.InitializeNewQueue(e, amount: 30);
         }
 
         Spawn();

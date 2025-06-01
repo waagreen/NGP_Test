@@ -11,7 +11,8 @@ public class PickableItem : PoolableObject
     private CircleCollider2D pickableArea;
     private Sequence pickupSequence;
     private InventoryItem item;
-    private Transform target;
+
+    public System.Action<InventoryItem> OnPickUp;
 
     public void Setup(InventoryItem item)
     {
@@ -31,9 +32,15 @@ public class PickableItem : PoolableObject
         pickupSequence?.Kill();
         pickupSequence = DOTween.Sequence();
 
-        pickupSequence.Append(transform.DOScale(Vector3.one, 0.4f));
+        pickupSequence.Append(transform.DOScale(Vector3.one, 0.2f));
         pickupSequence.Append(transform.DOScale(Vector3.zero, 0.07f));
-        pickupSequence.OnComplete(() => CompositeObjectPooler.Instance.ReturnObject(this));
+        pickupSequence.OnComplete(() =>
+        {
+            OnPickUp?.Invoke(item);
+            CompositeObjectPooler.Instance.ReturnObject(this);
+        });
+        pickupSequence.SetEase(Ease.OutBack);
+        pickupSequence.Play();
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
