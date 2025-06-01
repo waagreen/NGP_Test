@@ -28,6 +28,11 @@ public class CompositeObjectPooler : MonoBehaviour
         }
     }
 
+    private void Awake()
+    {
+        Debug.Assert(_instance == null, "More than one instance of COMPOSITE OBJECT POOLER", this); 
+    }
+
     private PoolableObject CreateNewObject(PoolableObject obj)
     {
         PoolableObject newObject = Instantiate(obj, transform);

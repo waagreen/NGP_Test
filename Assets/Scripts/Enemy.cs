@@ -1,9 +1,14 @@
+using System.Collections.Generic;
+using DG.Tweening;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D), typeof(CircleCollider2D))]
 public class Enemy : PoolableObject
 {
     [SerializeField] private int maxHealth = 2;
+    [SerializeField] private List<InventoryItem> drops;
+    [SerializeField] private SpriteRenderer sRenderer;
+    [SerializeField] private PickableItem pickablePrefab;
 
     [Header("Movement setting")]
     [SerializeField, Range(1f, 5f)] private float maxSpeed = 2f;
@@ -19,6 +24,7 @@ public class Enemy : PoolableObject
     private Rigidbody2D rb;
     private CircleCollider2D col;
 
+    private Sequence hurtSequence;
     private Transform target;
     private Vector2 currentDirection;
     private Vector2 velocity;
@@ -28,6 +34,24 @@ public class Enemy : PoolableObject
     private bool isActive = false;
 
     public System.Action<Enemy> OnDeath;
+
+    private void Awake()
+    {
+        if (rb == null)
+        {
+            rb = GetComponent<Rigidbody2D>();
+            rb.gravityScale = 0f;
+        }
+        if (col == null)
+        {
+            col = GetComponent<CircleCollider2D>();
+            col.radius = perceptionRadius;
+            col.isTrigger = true;
+        }
+        if (originalLayer == -1) originalLayer = gameObject.layer;
+
+        FreezeBehaviour();
+    }
 
     private void FreezeBehaviour()
     {
@@ -62,25 +86,39 @@ public class Enemy : PoolableObject
         currentDirection = newDirection.normalized;
     }
 
-    private void Awake()
+    private void HurtSequence()
     {
-        if (rb == null)
-        {
-            rb = GetComponent<Rigidbody2D>();
-            rb.gravityScale = 0f;
-        }
-        if (col == null)
-        {
-            col = GetComponent<CircleCollider2D>();
-            col.radius = perceptionRadius;
-            col.isTrigger = true;
-        }
-        if (originalLayer == -1) originalLayer = gameObject.layer;
+        hurtSequence?.Kill();
+        hurtSequence = DOTween.Sequence();
 
-        FreezeBehaviour();
+        hurtSequence.Append(transform.DOPunchScale(Vector3.one * 0.4f, 0.1f));
+        hurtSequence.Join(sRenderer.DOColor(Color.red, 0.1f));
+        hurtSequence.Join(transform.DORotate(Vector3.forward * 20f, 0.1f));
+        hurtSequence.Append(sRenderer.DOColor(Color.white, 0.08f));
+        hurtSequence.Join(transform.DORotate(Vector3.zero, 0.08f));
+        hurtSequence.OnComplete(() =>
+        {
+            // Checking if should return only after the feedback to keep the visuals consistent
+            if (currentHealth < 1) Return();
+        });
+
+        hurtSequence.Play();
     }
 
-    private void Start()
+    private void TryDropLoot()
+    {
+        int diceRoll = Random.Range(0, 6 + 1);
+
+        // 1/6 chance to drop a item
+        if (diceRoll < 6) return;
+
+        int randomDropIndex = Random.Range(0, drops.Count - 1);
+        PickableItem loot = CompositeObjectPooler.Instance.GetObject(pickablePrefab) as PickableItem;
+        loot.Setup(drops[randomDropIndex]);
+        loot.transform.position = transform.position;
+    }
+
+    private void OnEnable()
     {
         // Reset state variables
         currentHealth = maxHealth;
@@ -102,9 +140,10 @@ public class Enemy : PoolableObject
         else if ((hurtMask & 1 << (collision.gameObject.layer)) != 0)
         {
             currentHealth--;
+            HurtSequence();
             if (currentHealth < 1)
             {
-                Return();
+                TryDropLoot();
                 OnDeath.Invoke(this);
             }
         }
@@ -155,7 +194,7 @@ public class Enemy : PoolableObject
 
         UpdateMovementVariables();
         AdjustVelocity();
-        
+
         rb.linearVelocity = velocity;
     }
 }

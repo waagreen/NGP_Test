@@ -83,7 +83,7 @@ GameObject:
   - component: {fileID: 3133365502758142078}
   - component: {fileID: 6460997595852796011}
   m_Layer: 7
-  m_Name: Enemy
+  m_Name: Skeleton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -120,13 +120,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 27a400732f2562a4198ea3177a7ae89a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 2
-  maxSpeed: 2.5
-  acceleration: 40
+  maxHealth: 1
+  drops:
+  - {fileID: 11400000, guid: 5eaa57d57f1cf6e40aa9de58630d9f54, type: 2}
+  sRenderer: {fileID: 7561826804073359605}
+  pickablePrefab: {fileID: 5333157687265458998, guid: 7d36389df7c8d4f4aa652a915a37ac3b, type: 3}
+  maxSpeed: 3
+  acceleration: 45
   chaseSpeedMultiplier: 1.5
-  originalLayer:
-    serializedVersion: 2
-    m_Bits: 128
   targetMask:
     serializedVersion: 2
     m_Bits: 256
@@ -136,7 +137,7 @@ MonoBehaviour:
   hurtMask:
     serializedVersion: 2
     m_Bits: 1024
-  perceptionRadius: 5
+  perceptionRadius: 4
 --- !u!58 &2329374651195635960
 CircleCollider2D:
   m_ObjectHideFlags: 0

@@ -78,11 +78,11 @@ public class Player : MonoBehaviour
         hurtSequence?.Kill();
         hurtSequence = DOTween.Sequence();
 
-        hurtSequence.Append(transform.DOPunchScale(Vector3.one * 0.4f, 0.13f));
-        hurtSequence.Join(sRenderer.DOColor(Color.red, 0.13f));
-        hurtSequence.Join(transform.DORotate(Vector3.forward * 20f, 0.13f));
-        hurtSequence.Append(sRenderer.DOColor(Color.white, 0.1f));
-        hurtSequence.Join(transform.DORotate(Vector3.zero, 0.13f));
+        hurtSequence.Append(transform.DOPunchScale(Vector3.one * 0.4f, 0.15f));
+        hurtSequence.Join(sRenderer.DOColor(Color.red, 0.15f));
+        hurtSequence.Join(transform.DORotate(Vector3.forward * 20f, 0.15f));
+        hurtSequence.Append(sRenderer.DOColor(Color.white, 0.15f));
+        hurtSequence.Join(transform.DORotate(Vector3.zero, 0.15f));
 
         hurtSequence.Play();
     }

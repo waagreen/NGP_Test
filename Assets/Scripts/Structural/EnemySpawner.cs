@@ -6,9 +6,12 @@ public class EnemySpawner : MonoBehaviour
     [SerializeField] private float spawnRadius = 10f;
     [SerializeField] private float spawnInterval = 10f;
     [SerializeField] private int increasePerWave = 2;
-    [SerializeField] private List<Enemy> aviableEnemies;
     [SerializeField] private float initialTime = 60f;
     [SerializeField] private float timeBonus = 30f;
+
+    [Header("Enemies settings")]
+    [SerializeField] private List<Enemy> aviableEnemies;
+    [SerializeField] private PickableItem pickablePrefab;
 
     private const int kPooledAmount = 30;
 
@@ -63,6 +66,8 @@ public class EnemySpawner : MonoBehaviour
     {
         amountToSpawn = increasePerWave;
         currentTime = initialTime;
+
+        CompositeObjectPooler.Instance.InitializeNewQueue(pickablePrefab, kPooledAmount);
 
         foreach (Enemy e in aviableEnemies)
         {
