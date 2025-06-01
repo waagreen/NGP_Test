@@ -27,23 +27,10 @@ public class CompositeObjectPooler : MonoBehaviour
             return _instance;
         }
     }
-    
-    private void Awake()
-    {
-        // Make sure only one instance exists
-        if (_instance != null && _instance != this)
-        {
-            Destroy(this);
-        }
-        else
-        {
-            _instance = this;
-        }
-    }
 
     private PoolableObject CreateNewObject(PoolableObject obj)
     {
-        PoolableObject newObject = Instantiate(obj);
+        PoolableObject newObject = Instantiate(obj, transform);
         newObject.name = obj.name;
         return newObject;
     }
@@ -53,26 +40,30 @@ public class CompositeObjectPooler : MonoBehaviour
         for (int i = 0; i < amount; i++)
         {
             PoolableObject newObject = CreateNewObject(obj);
+            newObject.transform.SetParent(transform);
             newObject.gameObject.SetActive(false);
         }
     }
 
     public PoolableObject GetObject(PoolableObject obj)
     {
+        PoolableObject _obj;
         if (pools.TryGetValue(obj.name, out Queue<PoolableObject> objectQueue))
         {
             if (objectQueue.Count < 1)
             {
-                return CreateNewObject(obj);
+                _obj = CreateNewObject(obj);
             }
             else
             {
-                PoolableObject _obj = objectQueue.Dequeue();
-                _obj.gameObject.SetActive(true);
-                return _obj;
+                _obj = objectQueue.Dequeue();
             }
         }
-        else return CreateNewObject(obj);
+        else _obj = CreateNewObject(obj);
+
+        _obj.gameObject.SetActive(true);
+        _obj.transform.SetParent(null);
+        return _obj;
     }
 
     public void ReturnObject(PoolableObject obj)
@@ -88,6 +79,7 @@ public class CompositeObjectPooler : MonoBehaviour
             pools[obj.name] = newQueue;
         }
 
+        obj.transform.SetParent(transform);
         obj.gameObject.SetActive(false);
     }
     

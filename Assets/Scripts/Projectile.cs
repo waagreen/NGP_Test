@@ -30,6 +30,6 @@ public class Projectile : PoolableObject
         // First shift 1 left by the value of collision layer
         // Then use the AND operator to check if the layer isn't included on the mask
         if ((collisionMask & (1 << collision.gameObject.layer)) == 0) return;
-        gameObject.SetActive(false);
+        Return();
     }
 }

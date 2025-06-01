@@ -65,7 +65,7 @@ public class Enemy : PoolableObject
         else if ((hurtMask & 1 << (collision.gameObject.layer)) != 0)
         {
             health--;
-            if (health < 1) gameObject.SetActive(false);
+            if (health < 1) Return();
         }
 
     }
