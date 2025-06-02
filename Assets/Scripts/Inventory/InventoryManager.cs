@@ -173,6 +173,8 @@ public class InventoryManager : MonoBehaviour, ISaveData
         EventSystem.current.RaycastAll(eventData, results);
 
         int newSlotIndex = -1;
+        bool releasedOverSlot = false;
+        
         foreach (var result in results)
         {
             for (int i = 0; i < slots.Count; i++)
@@ -180,36 +182,42 @@ public class InventoryManager : MonoBehaviour, ISaveData
                 if (result.gameObject == slots[i].gameObject)
                 {
                     newSlotIndex = i;
+                    releasedOverSlot = true;
                     break;
                 }
             }
             if (newSlotIndex != -1) break;
         }
 
-        if (newSlotIndex != -1 && newSlotIndex != displayItem.SlotIndex)
+        if (releasedOverSlot)
         {
-            // Check if target slot is occupied
-            if (IsSlotOccupied(newSlotIndex))
+            if (newSlotIndex != -1 && newSlotIndex != displayItem.SlotIndex)
             {
-                // Perform swap
-                SwapItems(displayItem.SlotIndex, newSlotIndex);
+                if (IsSlotOccupied(newSlotIndex))
+                {
+                    SwapItems(displayItem.SlotIndex, newSlotIndex);
+                }
+                else
+                {
+                    MoveItem(displayItem.SlotIndex, newSlotIndex);
+                }
             }
             else
             {
-                // Perform move
-                MoveItem(displayItem.SlotIndex, newSlotIndex);
+                displayItem.ResetPosition();
             }
         }
         else
         {
-            displayItem.ResetPosition();
+            // Show confirmation dialog or immediately delete
+            DeleteItem(displayItem.SlotIndex);
         }
     }
-
-    public void RemoveItem(int slotIndex)
+    
+    public void DeleteItem(int slotIndex)
     {
         if (slotIndex < 0 || slotIndex >= slots.Count) return;
-        
+
         var itemData = GetItemDataInSlot(slotIndex);
         if (itemData == null) return;
 
