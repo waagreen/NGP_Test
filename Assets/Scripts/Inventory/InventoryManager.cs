@@ -66,17 +66,13 @@ public class InventoryManager : MonoBehaviour, ISaveData
     {
         foreach (var itemData in inventoryItemData)
         {
-            Debug.Log("Data pre");
             if (itemData == null) continue;
-            Debug.Log("Data post " + itemData.id + ", slot " + itemData.slotIndex);  
 
             if (itemData.slotIndex >= 0 && itemData.slotIndex < slots.Count)
             {
                 var itemDefinition = GetItemDefinition(itemData.id);
-                Debug.Log("Item definition is " + (itemDefinition == null));
                 if (itemDefinition != null)
                 {
-                    Debug.Log("Creating display");
                     CreateDisplayItem(itemDefinition, itemData);
                 }
             }
@@ -190,9 +186,19 @@ public class InventoryManager : MonoBehaviour, ISaveData
             if (newSlotIndex != -1) break;
         }
 
-        if (newSlotIndex != -1)
+        if (newSlotIndex != -1 && newSlotIndex != displayItem.SlotIndex)
         {
-            MoveItem(displayItem.SlotIndex, newSlotIndex);
+            // Check if target slot is occupied
+            if (IsSlotOccupied(newSlotIndex))
+            {
+                // Perform swap
+                SwapItems(displayItem.SlotIndex, newSlotIndex);
+            }
+            else
+            {
+                // Perform move
+                MoveItem(displayItem.SlotIndex, newSlotIndex);
+            }
         }
         else
         {
@@ -218,7 +224,7 @@ public class InventoryManager : MonoBehaviour, ISaveData
         inventoryItemData.Remove(itemData);
     }
 
-    public void MoveItem(int fromSlot, int toSlot)
+    private void MoveItem(int fromSlot, int toSlot)
     {
         if (fromSlot < 0 || fromSlot >= slots.Count || 
             toSlot < 0 || toSlot >= slots.Count) return;
@@ -226,52 +232,21 @@ public class InventoryManager : MonoBehaviour, ISaveData
         var fromItemData = GetItemDataInSlot(fromSlot);
         if (fromItemData == null) return;
 
-        var fromDefinition = GetItemDefinition(fromItemData.id);
-        if (fromDefinition == null) return;
+        // Update the slot index in the data immediately
+        fromItemData.slotIndex = toSlot;
 
-        var toItemData = GetItemDataInSlot(toSlot);
-        
-        if (toItemData == null)
+        if (displayItems.TryGetValue(fromSlot, out var displayItem))
         {
-            fromItemData.slotIndex = toSlot;
-
-            if (displayItems.TryGetValue(fromSlot, out var displayItem))
-            {
-                displayItems.Remove(fromSlot);
-                displayItems[toSlot] = displayItem;
-                displayItem.transform.SetParent(slots[toSlot]);
-                displayItem.transform.localPosition = Vector3.zero;
-                displayItem.Setup(fromDefinition, fromItemData, transform);
-            }
-        }
-        else
-        {
-            var toDefinition = GetItemDefinition(toItemData.id);
-            if (toDefinition == null) return;
-
-            if (fromItemData.id == toItemData.id && fromDefinition.isStackable)
-            {
-                int total = fromItemData.amount + toItemData.amount;
-                int maxStack = fromDefinition.maxStackSize;
-
-                if (total <= maxStack)
-                {
-                    toItemData.amount = total;
-                    UpdateDisplayForItem(toItemData);
-                    RemoveItem(fromSlot);
-                }
-                else
-                {
-                    toItemData.amount = maxStack;
-                    fromItemData.amount = total - maxStack;
-                    UpdateDisplayForItem(toItemData);
-                    UpdateDisplayForItem(fromItemData);
-                }
-            }
-            else
-            {
-                SwapItems(fromSlot, toSlot);
-            }
+            // Update the display item's slot index
+            displayItem.Setup(GetItemDefinition(fromItemData.id), fromItemData, transform);
+            
+            // Move in the dictionary
+            displayItems.Remove(fromSlot);
+            displayItems[toSlot] = displayItem;
+            
+            // Update parent and position
+            displayItem.transform.SetParent(slots[toSlot]);
+            displayItem.transform.localPosition = Vector3.zero;
         }
     }
 
@@ -280,48 +255,35 @@ public class InventoryManager : MonoBehaviour, ISaveData
         var itemA = GetItemDataInSlot(slotA);
         var itemB = GetItemDataInSlot(slotB);
 
-        if (itemA != null) itemA.slotIndex = slotB;
-        if (itemB != null) itemB.slotIndex = slotA;
+        if (itemA == null || itemB == null) return;
 
-        if (displayItems.TryGetValue(slotA, out var displayA) && displayA != null)
+        // Update slot indices in the data
+        itemA.slotIndex = slotB;
+        itemB.slotIndex = slotA;
+
+        // Get the display items
+        displayItems.TryGetValue(slotA, out var displayA);
+        displayItems.TryGetValue(slotB, out var displayB);
+
+        // Update display A
+        if (displayA != null)
         {
             displayA.transform.SetParent(slots[slotB]);
             displayA.transform.localPosition = Vector3.zero;
-            if (itemB != null)
-            {
-                var definitionB = GetItemDefinition(itemB.id);
-                if (definitionB != null)
-                {
-                    displayA.Setup(definitionB, itemB, transform);
-                }
-            }
+            displayA.Setup(GetItemDefinition(itemA.id), itemA, transform);
         }
 
-        if (displayItems.TryGetValue(slotB, out var displayB) && displayB != null)
+        // Update display B
+        if (displayB != null)
         {
             displayB.transform.SetParent(slots[slotA]);
             displayB.transform.localPosition = Vector3.zero;
-            if (itemA != null)
-            {
-                var definitionA = GetItemDefinition(itemA.id);
-                if (definitionA != null)
-                {
-                    displayB.Setup(definitionA, itemA, transform);
-                }
-            }
+            displayB.Setup(GetItemDefinition(itemB.id), itemB, transform);
         }
 
-        if (displayItems.TryGetValue(slotA, out var tempDisplay))
-        {
-            displayItems.Remove(slotA);
-            if (itemB != null) displayItems[slotB] = tempDisplay;
-        }
-
-        if (displayItems.TryGetValue(slotB, out tempDisplay))
-        {
-            displayItems.Remove(slotB);
-            if (itemA != null) displayItems[slotA] = tempDisplay;
-        }
+        // Update the dictionary
+        if (displayA != null) displayItems[slotB] = displayA;
+        if (displayB != null) displayItems[slotA] = displayB;
     }
 
     private void OnDestroy()

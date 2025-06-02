@@ -14,7 +14,7 @@ public class InventoryDisplayItem : MonoBehaviour, IBeginDragHandler, IDragHandl
     private Transform inventoryTransform;
     private InventoryItem itemDefinition;
     private ItemData itemData;
-    private readonly int slotIndex;
+    private int slotIndex;
 
     public event System.Action<InventoryDisplayItem, PointerEventData> OnDragRelease;
     public event System.Action<InventoryItem> OnPointerEnterEvent;
@@ -37,6 +37,7 @@ public class InventoryDisplayItem : MonoBehaviour, IBeginDragHandler, IDragHandl
         this.itemDefinition = itemDefinition;
         this.itemData = itemData;
         this.inventoryTransform = inventoryTransform;
+        slotIndex = itemData.slotIndex;
 
         spriteHolder.sprite = itemDefinition.sprite;
         UpdateAmount(itemData.amount);
@@ -45,8 +46,8 @@ public class InventoryDisplayItem : MonoBehaviour, IBeginDragHandler, IDragHandl
     public void OnBeginDrag(PointerEventData eventData)
     {
         originalParent = transform.parent;
-        // transform.SetParent(inventoryTransform);
-        // transform.SetAsLastSibling();
+        transform.SetParent(inventoryTransform);
+        transform.SetAsLastSibling();
         canvasGroup.blocksRaycasts = false;
     }
 
