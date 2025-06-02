@@ -12,12 +12,18 @@ public class LifeDisplay : MonoBehaviour
     {
         lifeSequence?.Kill();
         lifeSequence = DOTween.Sequence();
-        for (int i = lifeHolders.Count; i >= 1; i--)
+        
+        for (int i = 0; i < lifeHolders.Count; i++)
         {
-            int scaleFactor = currentAmount < i ? 0 : 1;
-            lifeSequence.Append(lifeHolders[i-1].DOScale(scaleFactor * Vector3.one, 0.2f).SetEase(Ease.OutBack));
+            bool shouldBeVisible = i < currentAmount;
+            bool isVisible = lifeHolders[i].localScale != Vector3.zero;
+            
+            if (isVisible && !shouldBeVisible)
+            {
+                lifeSequence.Append(lifeHolders[i].DOScale(Vector3.one * 1.2f, 0.2f).SetEase(Ease.OutBack));
+                lifeSequence.Append(lifeHolders[i].DOScale(Vector3.zero, 0.1f).SetEase(Ease.OutCubic));
+                break;
+            }
         }
-
-        lifeSequence.Play();
     }
 }

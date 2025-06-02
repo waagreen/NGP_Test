@@ -196,5 +196,14 @@ public class Enemy : PoolableObject
         AdjustVelocity();
 
         rb.linearVelocity = velocity;
+        
+        if (velocity.x < 0.1f)
+        {
+            sRenderer.flipX = false;
+        }
+        else if (velocity.x > -0.1f)
+        {
+            sRenderer.flipX = true;
+        }
     }
 }

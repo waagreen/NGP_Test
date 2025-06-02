@@ -163,7 +163,7 @@ RectTransform:
   m_GameObject: {fileID: 4770852785397271622}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.7, y: 0.7, z: 0.7}
+  m_LocalScale: {x: 0.9, y: 0.9, z: 0.9}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 8237496086498223948}
@@ -264,7 +264,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   spriteHolder: {fileID: 5379197586756192685}
   amountText: {fileID: 1774912541222967314}
-  descriptionText: {fileID: 0}
   canvasGroup: {fileID: 8651705562188849111}
 --- !u!225 &8651705562188849111
 CanvasGroup:

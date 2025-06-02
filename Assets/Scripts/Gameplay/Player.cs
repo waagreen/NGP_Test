@@ -91,6 +91,15 @@ public class Player : MonoBehaviour
     {
         desiredVelocity = input.Movement * maxSpeed;
         shootDirection = input.Shoot;
+
+        if (desiredVelocity.x > 0.1f)
+        {
+            sRenderer.flipX = false;
+        }
+        else if (desiredVelocity.x < -0.1f)
+        {
+            sRenderer.flipX = true;
+        }
     }
 
     private void FixedUpdate()

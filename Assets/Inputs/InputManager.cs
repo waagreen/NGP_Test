@@ -10,6 +10,7 @@ public class InputManager : MonoBehaviour
 
     public Vector2 Shoot => shootInput;
     public Vector2 Movement => movementInput;
+    public event System.Action OnInventoryToggle;
 
     private void UpdateMovementInput(InputAction.CallbackContext ctx)
     {
@@ -25,6 +26,11 @@ public class InputManager : MonoBehaviour
         shootInput = ctx.ReadValue<Vector2>().normalized;
     }
 
+    private void TriggerInventoryToggle(InputAction.CallbackContext ctx)
+    {
+        OnInventoryToggle?.Invoke();
+    }
+
     public void SetupActionMap()
     {
         actionMap = new();
@@ -37,6 +43,8 @@ public class InputManager : MonoBehaviour
         actionMap.Player.Look.performed += UpdateShootInput;
         actionMap.Player.Look.started += UpdateShootInput;
         actionMap.Player.Look.canceled += UpdateShootInput;
+
+        actionMap.Player.Interact.started += TriggerInventoryToggle;
     }
 
     private void OnDestroy()
@@ -48,6 +56,8 @@ public class InputManager : MonoBehaviour
         actionMap.Player.Look.performed -= UpdateShootInput;
         actionMap.Player.Look.started -= UpdateShootInput;
         actionMap.Player.Look.canceled -= UpdateShootInput;
+
+        actionMap.Player.Interact.started -= TriggerInventoryToggle;
 
         actionMap.Disable();
         actionMap = null;

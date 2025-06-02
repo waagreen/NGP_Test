@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 22b642b3afac98e4496630516a58d162, type: 3}
   m_Name: Slime
   m_EditorClassIdentifier: 
-  sprite: {fileID: -7282886668606283007, guid: 59518dd633223ee47bb3b86ea0876dde, type: 3}
+  sprite: {fileID: 21300000, guid: 59518dd633223ee47bb3b86ea0876dde, type: 3}
   id: Slime
   description: This goo can make your SHOTS BOUNCE.
-  amount: 0
   isStackable: 1
+  maxStackSize: 99

@@ -1,19 +1,29 @@
+using System;
 using System.Collections.Generic;
+using DG.Tweening;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
 public class InventoryManager : MonoBehaviour, ISaveData
 {
+    [Header("Definition Prefabs")]
     [SerializeField] private PickableItem pickablePrefab;
     [SerializeField] private InventoryDisplayItem displayPrefab;
-    [SerializeField] private TMP_Text descriptionText;
+
+    [Header("Visuals")]
+    [SerializeField] private Transform inventoryParent;
     [SerializeField] private GameObject descriptionHolder;
+    [SerializeField] private TMP_Text descriptionText;
     [SerializeField] private List<RectTransform> slots;
 
     private List<PickableItem> worldPickableItems;
     private List<ItemData> inventoryItemData; // This will be read from and to the json
     private readonly Dictionary<int, InventoryDisplayItem> displayItems = new();
+
+    private Sequence toggleSequence;
+    private bool isVisible = true;
+    
 
     public void SaveData(ref SaveData data)
     {
@@ -158,7 +168,7 @@ public class InventoryManager : MonoBehaviour, ISaveData
         var displayItem = Instantiate(displayPrefab, slots[itemData.slotIndex]);
         if (displayItem == null) return;
         
-        displayItem.Setup(itemDefinition, itemData, transform);
+        displayItem.Setup(itemDefinition, itemData, inventoryParent);
         displayItem.OnDragRelease += HandleDragRelease;
         displayItem.OnPointerEnterEvent += ShowItemDescription;
         displayItem.OnPointerExitEvent += HideItemDescription;
@@ -246,7 +256,7 @@ public class InventoryManager : MonoBehaviour, ISaveData
         if (displayItems.TryGetValue(fromSlot, out var displayItem))
         {
             // Update the display item's slot index
-            displayItem.Setup(GetItemDefinition(fromItemData.id), fromItemData, transform);
+            displayItem.Setup(GetItemDefinition(fromItemData.id), fromItemData, inventoryParent);
             
             // Move in the dictionary
             displayItems.Remove(fromSlot);
@@ -278,7 +288,7 @@ public class InventoryManager : MonoBehaviour, ISaveData
         {
             displayA.transform.SetParent(slots[slotB]);
             displayA.transform.localPosition = Vector3.zero;
-            displayA.Setup(GetItemDefinition(itemA.id), itemA, transform);
+            displayA.Setup(GetItemDefinition(itemA.id), itemA, inventoryParent);
         }
 
         // Update display B
@@ -286,12 +296,26 @@ public class InventoryManager : MonoBehaviour, ISaveData
         {
             displayB.transform.SetParent(slots[slotA]);
             displayB.transform.localPosition = Vector3.zero;
-            displayB.Setup(GetItemDefinition(itemB.id), itemB, transform);
+            displayB.Setup(GetItemDefinition(itemB.id), itemB, inventoryParent);
         }
 
         // Update the dictionary
         if (displayA != null) displayItems[slotB] = displayA;
         if (displayB != null) displayItems[slotA] = displayB;
+    }
+
+    public void ToggleSequence()
+    {
+        float rotation = isVisible ? 90 : 0;
+
+        toggleSequence?.Kill();
+        toggleSequence = DOTween.Sequence();
+
+        toggleSequence.Append(inventoryParent.DORotate(Vector3.forward * rotation, 0.4f, RotateMode.Fast).SetEase(Ease.OutBack));
+        toggleSequence.Insert(0.1f, inventoryParent.DOPunchScale(Vector3.one * 0.2f, 0.3f, vibrato: 5, elasticity: 0.5f));
+        toggleSequence.OnComplete(() => isVisible = !isVisible);
+
+        toggleSequence.Play();
     }
 
     private void OnDestroy()

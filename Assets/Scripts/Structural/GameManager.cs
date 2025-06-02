@@ -9,6 +9,7 @@ public class GameManager : MonoBehaviour
     private UIManager uI;
     private InputManager input;
     private EnemySpawner spawner;
+    private InventoryManager inventory;
     private Player player;
 
     private void Awake()
@@ -19,6 +20,9 @@ public class GameManager : MonoBehaviour
         spawner = FindFirstObjectByType<EnemySpawner>();
         uI = FindFirstObjectByType<UIManager>();
 
+        inventory = FindFirstObjectByType<InventoryManager>();
+        input.OnInventoryToggle += inventory.ToggleSequence;
+
         player = Instantiate(playerPrefab, initalSpawnPoint);
         uI.Setup(player, spawner);
     }
@@ -26,5 +30,10 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
         player.Setup(input);
+    }
+
+    private void OnDestroy()
+    {
+        input.OnInventoryToggle -= inventory.ToggleSequence;
     }
 }

@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 5d9cacc4eaac55544b65bff8140edace
+guid: 4970ef3a934bd2644a08e00dbdbe66c0
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 540803829919948875
-    second: Brain_0
+      213: -4008310009056282180
+    second: Timer_Fill_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -46,7 +46,7 @@ TextureImporter:
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
-  spriteMode: 1
+  spriteMode: 2
   spriteExtrude: 1
   spriteMeshType: 1
   alignment: 0
@@ -113,23 +113,23 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Brain_0
+      name: Timer_Fill_0
       rect:
         serializedVersion: 2
-        x: 1
-        y: 2
-        width: 31
-        height: 26
+        x: 16
+        y: 28
+        width: 483
+        height: 450
       alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 128, y: 128, z: 128, w: 128}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: b40ac8fc732518700800000000000000
-      internalID: 540803829919948875
+      spriteID: cb9be80a84f9f58c0800000000000000
+      internalID: -4008310009056282180
       vertices: []
       indices: 
       edges: []
@@ -138,7 +138,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 5e97eb03825dee720800000000000000
+    spriteID: 61d883d265aba1f4c9329390e051bf15
     internalID: 0
     vertices: []
     indices: 
@@ -148,7 +148,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Brain_0: 540803829919948875
+      Timer_Fill_0: -4008310009056282180
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
