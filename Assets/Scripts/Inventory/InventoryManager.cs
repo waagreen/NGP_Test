@@ -2,18 +2,20 @@ using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class InventoryManager : MonoBehaviour
 {
     [SerializeField] private PickableItem pickablePrefab;
     [SerializeField] private InventoryDisplayItem displayPrefab;
     [SerializeField] private TMP_Text descriptionText;
+    [SerializeField] private GameObject descriptionHolder;
     [SerializeField] private List<RectTransform> slots;
     [SerializeField] private int maxStackSize = 99;
 
     List<PickableItem> worldPickableItems;
-    private Dictionary<int, InventoryItem> inventoryItems = new();
-    private Dictionary<int, InventoryDisplayItem> displayItems = new();
+    private readonly Dictionary<int, InventoryItem> inventoryItems = new();
+    private readonly Dictionary<int, InventoryDisplayItem> displayItems = new();
 
     private void Start()
     {
@@ -80,10 +82,57 @@ public class InventoryManager : MonoBehaviour
     private void AddItemToSlot(InventoryItem item, int slotIndex)
     {
         inventoryItems[slotIndex] = item;
-        
+
         var displayItem = Instantiate(displayPrefab, slots[slotIndex]);
         displayItem.Setup(item, slotIndex);
+        displayItem.OnDragRelease += HandleDragRelease;
+        displayItem.OnPointerEnterEvent += ShowItemDescription;
+        displayItem.OnPointerExitEvent += HideItemDescription;
         displayItems[slotIndex] = displayItem;
+    }
+    
+    private void HandleDragRelease(InventoryDisplayItem displayItem, PointerEventData eventData)
+    {
+        // Find which slot we're hovering over
+        List<RaycastResult> results = new();
+        EventSystem.current.RaycastAll(eventData, results);
+
+        int newSlotIndex = -1;
+        foreach (var result in results)
+        {
+            for (int i = 0; i < slots.Count; i++)
+            {
+                if (result.gameObject == slots[i].gameObject)
+                {
+                    newSlotIndex = i;
+                    break;
+                }
+            }
+            if (newSlotIndex != -1) break;
+        }
+
+        if (newSlotIndex != -1)
+        {
+            // If we found a slot, move or swap the item
+            MoveItem(displayItem.SlotIndex, newSlotIndex);
+        }
+        else
+        {
+            // If not, return the item to its original position
+            displayItem.ResetPosition();
+        }
+    }
+
+    private void ShowItemDescription(InventoryItem item)
+    {
+        descriptionText.text = item.description;
+        descriptionHolder.SetActive(true);
+    }
+
+    private void HideItemDescription()
+    {
+        descriptionText.text = "";
+        descriptionHolder.SetActive(false);
     }
 
     public void RemoveItem(int slotIndex)
@@ -175,6 +224,13 @@ public class InventoryManager : MonoBehaviour
         {
             if (item == null) return;
             item.OnPickUp -= AddItemToInventory;
+        }
+
+        foreach (InventoryDisplayItem displayItem in displayItems.Values)
+        {
+            displayItem.OnDragRelease += HandleDragRelease;
+            displayItem.OnPointerEnterEvent += ShowItemDescription;
+            displayItem.OnPointerExitEvent += HideItemDescription;
         }
     }
 }

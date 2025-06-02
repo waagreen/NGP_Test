@@ -12,7 +12,7 @@ public class PickableItem : PoolableObject
     private Sequence pickupSequence;
     private InventoryItem item;
 
-    public System.Action<InventoryItem> OnPickUp;
+    public event System.Action<InventoryItem> OnPickUp;
 
     public void Setup(InventoryItem item)
     {
@@ -32,14 +32,12 @@ public class PickableItem : PoolableObject
         pickupSequence?.Kill();
         pickupSequence = DOTween.Sequence();
 
-        pickupSequence.Append(transform.DOScale(Vector3.one, 0.2f));
-        pickupSequence.Append(transform.DOScale(Vector3.zero, 0.07f));
+        pickupSequence.Append(transform.DOScale(Vector3.zero, 0.1f).SetEase(Ease.OutCirc));
         pickupSequence.OnComplete(() =>
         {
             OnPickUp?.Invoke(item);
             CompositeObjectPooler.Instance.ReturnObject(this);
         });
-        pickupSequence.SetEase(Ease.OutBack);
         pickupSequence.Play();
     }
 

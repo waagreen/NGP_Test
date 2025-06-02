@@ -22,8 +22,8 @@ public class EnemySpawner : MonoBehaviour
     public float LastSpawnTime => lastSpawnTime;
     public float CurrentTime => currentTime;
 
-    public System.Action OnWaveClear;
-    public System.Action OnGameOver;
+    public event System.Action OnWaveClear;
+    public event System.Action OnGameOver;
 
     private void UpdateBodyCount(Enemy killedEnemy)
     {

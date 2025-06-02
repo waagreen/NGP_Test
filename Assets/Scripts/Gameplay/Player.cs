@@ -34,7 +34,7 @@ public class Player : MonoBehaviour
 
     private Sequence hurtSequence;
 
-    public Action<int> OnHurt;
+    public event Action<int> OnHurt;
 
     public void Setup(InputManager input)
     {

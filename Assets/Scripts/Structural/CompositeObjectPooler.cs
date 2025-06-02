@@ -47,8 +47,7 @@ public class CompositeObjectPooler : MonoBehaviour
         for (int i = 0; i < amount; i++)
         {
             PoolableObject newObject = CreateNewObject(obj);
-            newObject.transform.SetParent(transform);
-            newObject.gameObject.SetActive(false);
+            ReturnObject(newObject);
             list.Add(newObject);
         }
         
@@ -60,8 +59,7 @@ public class CompositeObjectPooler : MonoBehaviour
         for (int i = 0; i < amount; i++)
         {
             PoolableObject newObject = CreateNewObject(obj);
-            newObject.transform.SetParent(transform);
-            newObject.gameObject.SetActive(false);
+            ReturnObject(newObject);
         }
     }
 
@@ -82,7 +80,7 @@ public class CompositeObjectPooler : MonoBehaviour
         else _obj = CreateNewObject(obj);
 
         _obj.gameObject.SetActive(true);
-        _obj.transform.SetParent(transform.root);
+        _obj.transform.SetParent(null);
         return _obj;
     }
 

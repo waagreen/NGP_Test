@@ -33,7 +33,7 @@ public class Enemy : PoolableObject
     private int originalLayer = -1;
     private bool isActive = false;
 
-    public System.Action<Enemy> OnDeath;
+    public event System.Action<Enemy> OnDeath;
 
     private void Awake()
     {
@@ -109,8 +109,8 @@ public class Enemy : PoolableObject
     {
         int diceRoll = Random.Range(0, 6 + 1);
 
-        // 1/6 chance to drop a item
-        if (diceRoll < 6) return;
+        // 2/6 chance to drop a item
+        if (diceRoll == 1 || diceRoll == 6) return;
 
         int randomDropIndex = Random.Range(0, drops.Count - 1);
         PickableItem loot = CompositeObjectPooler.Instance.GetObject(pickablePrefab) as PickableItem;
