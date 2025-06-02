@@ -11,6 +11,7 @@ public class LoadSceneButton : MonoBehaviour
 
     private void LoadScene()
     {
+        SaveDataManager.Instance.SaveGame();
         SceneManager.LoadScene(sceneName);
     }
 
