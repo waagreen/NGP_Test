@@ -9,6 +9,7 @@ public class Enemy : PoolableObject
     [SerializeField] private List<InventoryItem> drops;
     [SerializeField] private SpriteRenderer sRenderer;
     [SerializeField] private PickableItem pickablePrefab;
+    [SerializeField] private AudioSource hurtAudio;
 
     [Header("Movement setting")]
     [SerializeField, Range(1f, 5f)] private float maxSpeed = 2f;
@@ -140,12 +141,13 @@ public class Enemy : PoolableObject
         else if ((hurtMask & 1 << (collision.gameObject.layer)) != 0)
         {
             currentHealth--;
-            HurtSequence();
             if (currentHealth < 1)
             {
                 TryDropLoot();
                 OnDeath.Invoke(this);
+                hurtAudio.Play();
             }
+            HurtSequence();
         }
     }
 

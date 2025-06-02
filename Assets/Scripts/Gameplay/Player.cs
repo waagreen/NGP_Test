@@ -11,13 +11,17 @@ public class Player : MonoBehaviour
     [SerializeField, Range(1f, 50f)] private float maxSpeed = 10f;
     [SerializeField, Range(10f, 100f)] private float acceleration = 1f;
 
-    [Header("Shoot setting")]
+    [Header("Shoot settings")]
     [SerializeField] private Projectile projectilePrefab;
 
-    [Header("Detection Setting")]
+    [Header("Detection Settings")]
     [SerializeField] private float invincibilityTime = 1f;
     [SerializeField] private LayerMask hurtLayer;
     [SerializeField] private SpriteRenderer sRenderer;
+
+    [Header("Audio Settings")]
+    [SerializeField] private AudioSource shootAudio;
+    [SerializeField] private AudioSource hurtAudio;
 
     // Assigned once per instance
     private Rigidbody2D rb;
@@ -71,6 +75,7 @@ public class Player : MonoBehaviour
         Projectile p = CompositeObjectPooler.Instance.GetObject(projectilePrefab) as Projectile;
         p.transform.position = transform.position;
         p.ApplyImpulse(shootDirection);
+        shootAudio.Play();
     }
 
     private void HurtSequence()
@@ -119,6 +124,7 @@ public class Player : MonoBehaviour
         OnHurt.Invoke(health);
         lastHitTime = Time.time;
 
+        hurtAudio.Play();
         HurtSequence();
 
         if (health == 0) gameObject.SetActive(false);
