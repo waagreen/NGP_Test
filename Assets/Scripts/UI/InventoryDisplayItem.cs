@@ -9,18 +9,17 @@ public class InventoryDisplayItem : MonoBehaviour, IBeginDragHandler, IDragHandl
     [SerializeField] private TMP_Text amountText;
     [SerializeField] private CanvasGroup canvasGroup;
 
-    private Transform originalParent;
-    private InventoryItem item;
-    private int slotIndex;
-    private bool isDragging;
-    private Vector3 originalPosition;
     private Camera cam;
+    private Transform originalParent;
+    private Transform inventoryTransform;
+    private InventoryItem itemDefinition;
+    private ItemData itemData;
+    private readonly int slotIndex;
 
     public event System.Action<InventoryDisplayItem, PointerEventData> OnDragRelease;
     public event System.Action<InventoryItem> OnPointerEnterEvent;
     public event System.Action OnPointerExitEvent;
 
-    public InventoryItem Item => item;
     public int SlotIndex => slotIndex;
 
     private void Awake()
@@ -33,20 +32,21 @@ public class InventoryDisplayItem : MonoBehaviour, IBeginDragHandler, IDragHandl
         amountText.SetText(newAmount.ToString());
     }
 
-    public void Setup(InventoryItem item, int slotIndex)
+    public void Setup(InventoryItem itemDefinition, ItemData itemData, Transform inventoryTransform)
     {
-        this.item = item;
-        this.slotIndex = slotIndex;
+        this.itemDefinition = itemDefinition;
+        this.itemData = itemData;
+        this.inventoryTransform = inventoryTransform;
 
-        spriteHolder.sprite = item.sprite;
-        UpdateAmount(item.amount);
+        spriteHolder.sprite = itemDefinition.sprite;
+        UpdateAmount(itemData.amount);
     }
 
     public void OnBeginDrag(PointerEventData eventData)
     {
-        isDragging = true;
         originalParent = transform.parent;
-        originalPosition = transform.localPosition;
+        // transform.SetParent(inventoryTransform);
+        // transform.SetAsLastSibling();
         canvasGroup.blocksRaycasts = false;
     }
 
@@ -66,7 +66,6 @@ public class InventoryDisplayItem : MonoBehaviour, IBeginDragHandler, IDragHandl
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        isDragging = false;
         canvasGroup.blocksRaycasts = true;
         OnDragRelease?.Invoke(this, eventData);
     }
@@ -75,12 +74,11 @@ public class InventoryDisplayItem : MonoBehaviour, IBeginDragHandler, IDragHandl
     {
         transform.SetParent(originalParent);
         transform.localPosition = Vector3.zero;
-        // transform.position = originalPosition;
     }
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        OnPointerEnterEvent?.Invoke(item);
+        OnPointerEnterEvent?.Invoke(itemDefinition);
     }
 
     public void OnPointerExit(PointerEventData eventData)

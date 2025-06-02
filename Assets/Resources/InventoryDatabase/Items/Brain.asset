@@ -10,9 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 22b642b3afac98e4496630516a58d162, type: 3}
-  m_Name: Bone
+  m_Name: Brain
   m_EditorClassIdentifier: 
-  sprite: {fileID: -2739807658926110822, guid: 5932a398d47143c45bac98eb61286c61, type: 3}
-  id: skull
-  description: The remaining knowledge contained in this skull INCREASES YOUR ATTACK
-    SPEED.
+  sprite: {fileID: 540803829919948875, guid: 5d9cacc4eaac55544b65bff8140edace, type: 3}
+  id: Brain
+  description: New brain cells INCREASE YOUR ATTACK DAMAGE.
+  amount: 0
+  isStackable: 1

@@ -4,6 +4,7 @@ using UnityEngine;
 public class ItemData
 {
     public string id;
+    public int slotIndex;
     public int amount;
 }
 
@@ -11,4 +12,9 @@ public class ItemData
 public class SaveData
 {
     public ItemData[] inventory;
+
+    public SaveData()
+    {
+        inventory = new ItemData[0]; // Empty array by default
+    }
 }

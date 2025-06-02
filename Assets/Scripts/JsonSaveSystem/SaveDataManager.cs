@@ -2,26 +2,26 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 
-public class SavaDataManager : MonoBehaviour
+public class SaveDataManager : MonoBehaviour
 {
     [Header("Json storage settings")]
     [SerializeField] private string fileName;
 
-    private static SavaDataManager _instance;
-    public static SavaDataManager Instance
+    private static SaveDataManager _instance;
+    public static SaveDataManager Instance
     {
         get
         {
             // If instance is null, try to find one in the scene
             if (_instance == null)
             {
-                _instance = FindFirstObjectByType<SavaDataManager>();
+                _instance = FindFirstObjectByType<SaveDataManager>();
 
                 // If that fails, create one
                 if (_instance == null)
                 {
-                    GameObject singletonObject = new(typeof(SavaDataManager).Name);
-                    _instance = singletonObject.AddComponent<SavaDataManager>();
+                    GameObject singletonObject = new(typeof(SaveDataManager).Name);
+                    _instance = singletonObject.AddComponent<SaveDataManager>();
                 }
             }
             return _instance;

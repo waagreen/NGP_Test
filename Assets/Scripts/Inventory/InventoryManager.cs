@@ -1,21 +1,30 @@
 using System.Collections.Generic;
-using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class InventoryManager : MonoBehaviour
+public class InventoryManager : MonoBehaviour, ISaveData
 {
     [SerializeField] private PickableItem pickablePrefab;
     [SerializeField] private InventoryDisplayItem displayPrefab;
     [SerializeField] private TMP_Text descriptionText;
     [SerializeField] private GameObject descriptionHolder;
     [SerializeField] private List<RectTransform> slots;
-    [SerializeField] private int maxStackSize = 99;
 
-    List<PickableItem> worldPickableItems;
-    private readonly Dictionary<int, InventoryItem> inventoryItems = new();
+    private List<PickableItem> worldPickableItems;
+    private List<ItemData> inventoryItemData; // This will be read from and to the json
     private readonly Dictionary<int, InventoryDisplayItem> displayItems = new();
+
+    public void SaveData(ref SaveData data)
+    {
+        data.inventory = inventoryItemData.ToArray();
+    }
+
+    public void LoadData(SaveData data)
+    {
+        inventoryItemData = new List<ItemData>(data.inventory);
+        RefreshInventoryDisplay();
+    }
 
     private void Start()
     {
@@ -24,54 +33,119 @@ public class InventoryManager : MonoBehaviour
 
         foreach (PickableItem item in worldPickableItems)
         {
-            item.OnPickUp += AddItemToInventory;
-        }
-
-        //Initialize empty slots
-        for (int i = 0; i < slots.Count; i++)
-        {
-            if (!inventoryItems.ContainsKey(i))
+            if (item != null)
             {
-                inventoryItems[i] = null;
+                item.OnPickUp += AddItemToInventory;
+            }
+        }
+    }
+    
+    private ItemData GetItemDataInSlot(int slotIndex)
+    {
+        if (slotIndex < 0 || slotIndex >= slots.Count) return null;
+        return inventoryItemData.Find(data => data.slotIndex == slotIndex);
+    }
+
+    private void ShowItemDescription(InventoryItem item)
+    {
+        if (item == null || descriptionHolder == null || descriptionText == null) return;
+        
+        descriptionText.text = item.description;
+        descriptionHolder.SetActive(true);
+    }
+
+    private void HideItemDescription()
+    {
+        if (descriptionHolder == null || descriptionText == null) return;
+        
+        descriptionText.text = "";
+        descriptionHolder.SetActive(false);
+    }
+
+    private void RefreshInventoryDisplay()
+    {
+        foreach (var itemData in inventoryItemData)
+        {
+            Debug.Log("Data pre");
+            if (itemData == null) continue;
+            Debug.Log("Data post " + itemData.id + ", slot " + itemData.slotIndex);  
+
+            if (itemData.slotIndex >= 0 && itemData.slotIndex < slots.Count)
+            {
+                var itemDefinition = GetItemDefinition(itemData.id);
+                Debug.Log("Item definition is " + (itemDefinition == null));
+                if (itemDefinition != null)
+                {
+                    Debug.Log("Creating display");
+                    CreateDisplayItem(itemDefinition, itemData);
+                }
             }
         }
     }
 
-    private void AddItemToInventory(InventoryItem item)
+    private bool IsSlotOccupied(int slotIndex)
     {
-        // Try to stack items if possibly
-        if (item.isStackable)
-        {
-            for (int i = 0; i < slots.Count; i++)
-            {
-                if (inventoryItems[i] != null &&
-                    inventoryItems[i].id == item.id &&
-                    inventoryItems[i].amount < maxStackSize)
-                {
-                    int total = inventoryItems[i].amount + item.amount;
+        if (slotIndex < 0 || slotIndex >= slots.Count) return true;
+        return inventoryItemData.Exists(data => data.slotIndex == slotIndex);
+    }
 
-                    if (total <= maxStackSize)
-                    {
-                        inventoryItems[i].amount = total;
-                        displayItems[i].UpdateAmount(total);
-                        return;
-                    }
-                    else
-                    {
-                        inventoryItems[i].amount = maxStackSize;
-                        displayItems[i].UpdateAmount(maxStackSize);
-                        item.amount = total - maxStackSize;
-                    }
+    private InventoryItem GetItemDefinition(string id)
+    {
+        if (string.IsNullOrEmpty(id)) return null;
+        
+        InventoryItem loadedItem = Resources.Load<InventoryItem>($"InventoryDatabase/Items/{id}");
+        if (loadedItem == null)
+        {
+            Debug.LogWarning($"Item definition not found for ID: {id}");
+        }
+        return loadedItem;
+    }
+
+    private void UpdateDisplayForItem(ItemData itemData)
+    {
+        if (itemData == null) return;
+        
+        if (displayItems.TryGetValue(itemData.slotIndex, out var displayItem) && displayItem != null)
+        {
+            displayItem.UpdateAmount(itemData.amount);
+        }
+    }
+
+    private void AddItemToInventory(InventoryItem itemDefinition)
+    {
+        if (itemDefinition == null) return;
+
+        if (itemDefinition.isStackable)
+        {
+            foreach (var existingData in inventoryItemData)
+            {
+                if (existingData == null) continue;
+                
+                var existingDefinition = GetItemDefinition(existingData.id);
+                if (existingDefinition != null &&
+                    existingData.id == itemDefinition.id &&
+                    existingData.amount < itemDefinition.maxStackSize)
+                {
+                    existingData.amount += 1;
+                    UpdateDisplayForItem(existingData);
+                    return;
                 }
             }
         }
 
-        // Find empty slot
         for (int i = 0; i < slots.Count; i++)
         {
-            if (inventoryItems[i] == null)
+            if (!IsSlotOccupied(i))
             {
-                AddItemToSlot(item, i);
+                var newItemData = new ItemData
+                {
+                    id = itemDefinition.id,
+                    amount = 1,
+                    slotIndex = i
+                };
+                
+                inventoryItemData.Add(newItemData);
+                CreateDisplayItem(itemDefinition, newItemData);
                 return;
             }
         }
@@ -79,21 +153,26 @@ public class InventoryManager : MonoBehaviour
         Debug.LogWarning("Inventory is full!");
     }
 
-    private void AddItemToSlot(InventoryItem item, int slotIndex)
+    private void CreateDisplayItem(InventoryItem itemDefinition, ItemData itemData)
     {
-        inventoryItems[slotIndex] = item;
+        if (itemDefinition == null || itemData == null || 
+            itemData.slotIndex < 0 || itemData.slotIndex >= slots.Count) 
+            return;
 
-        var displayItem = Instantiate(displayPrefab, slots[slotIndex]);
-        displayItem.Setup(item, slotIndex);
+        var displayItem = Instantiate(displayPrefab, slots[itemData.slotIndex]);
+        if (displayItem == null) return;
+        
+        displayItem.Setup(itemDefinition, itemData, transform);
         displayItem.OnDragRelease += HandleDragRelease;
         displayItem.OnPointerEnterEvent += ShowItemDescription;
         displayItem.OnPointerExitEvent += HideItemDescription;
-        displayItems[slotIndex] = displayItem;
+        displayItems[itemData.slotIndex] = displayItem;
     }
-    
+
     private void HandleDragRelease(InventoryDisplayItem displayItem, PointerEventData eventData)
     {
-        // Find which slot we're hovering over
+        if (displayItem == null) return;
+
         List<RaycastResult> results = new();
         EventSystem.current.RaycastAll(eventData, results);
 
@@ -113,124 +192,159 @@ public class InventoryManager : MonoBehaviour
 
         if (newSlotIndex != -1)
         {
-            // If we found a slot, move or swap the item
             MoveItem(displayItem.SlotIndex, newSlotIndex);
         }
         else
         {
-            // If not, return the item to its original position
             displayItem.ResetPosition();
         }
     }
 
-    private void ShowItemDescription(InventoryItem item)
-    {
-        descriptionText.text = item.description;
-        descriptionHolder.SetActive(true);
-    }
-
-    private void HideItemDescription()
-    {
-        descriptionText.text = "";
-        descriptionHolder.SetActive(false);
-    }
-
     public void RemoveItem(int slotIndex)
     {
-        if (inventoryItems.ContainsKey(slotIndex) && inventoryItems[slotIndex] != null)
+        if (slotIndex < 0 || slotIndex >= slots.Count) return;
+        
+        var itemData = GetItemDataInSlot(slotIndex);
+        if (itemData == null) return;
+
+        if (displayItems.TryGetValue(slotIndex, out var displayItem) && displayItem != null)
         {
-            Destroy(displayItems[slotIndex].gameObject);
-            inventoryItems[slotIndex] = null;
+            displayItem.OnDragRelease -= HandleDragRelease;
+            displayItem.OnPointerEnterEvent -= ShowItemDescription;
+            displayItem.OnPointerExitEvent -= HideItemDescription;
+            Destroy(displayItem.gameObject);
             displayItems.Remove(slotIndex);
         }
+        inventoryItemData.Remove(itemData);
     }
 
     public void MoveItem(int fromSlot, int toSlot)
     {
-        if (inventoryItems[fromSlot] == null) return;
+        if (fromSlot < 0 || fromSlot >= slots.Count || 
+            toSlot < 0 || toSlot >= slots.Count) return;
 
-        // If target slot is empty, just move the item
-        if (inventoryItems[toSlot] == null)
+        var fromItemData = GetItemDataInSlot(fromSlot);
+        if (fromItemData == null) return;
+
+        var fromDefinition = GetItemDefinition(fromItemData.id);
+        if (fromDefinition == null) return;
+
+        var toItemData = GetItemDataInSlot(toSlot);
+        
+        if (toItemData == null)
         {
-            inventoryItems[toSlot] = inventoryItems[fromSlot];
-            displayItems[toSlot] = displayItems[fromSlot];
+            fromItemData.slotIndex = toSlot;
 
-            displayItems[toSlot].transform.SetParent(slots[toSlot]);
-            displayItems[toSlot].transform.localPosition = Vector3.zero;
-            displayItems[toSlot].Setup(inventoryItems[toSlot], toSlot);
-
-            inventoryItems[fromSlot] = null;
-            displayItems.Remove(fromSlot);
-        }
-        // If items are the same and stackable, try to merge
-        else if (inventoryItems[fromSlot].id == inventoryItems[toSlot].id &&
-                 inventoryItems[fromSlot].isStackable)
-        {
-            int total = inventoryItems[fromSlot].amount + inventoryItems[toSlot].amount;
-
-            if (total <= maxStackSize)
+            if (displayItems.TryGetValue(fromSlot, out var displayItem))
             {
-                inventoryItems[toSlot].amount = total;
-                displayItems[toSlot].UpdateAmount(total);
-                RemoveItem(fromSlot);
+                displayItems.Remove(fromSlot);
+                displayItems[toSlot] = displayItem;
+                displayItem.transform.SetParent(slots[toSlot]);
+                displayItem.transform.localPosition = Vector3.zero;
+                displayItem.Setup(fromDefinition, fromItemData, transform);
+            }
+        }
+        else
+        {
+            var toDefinition = GetItemDefinition(toItemData.id);
+            if (toDefinition == null) return;
+
+            if (fromItemData.id == toItemData.id && fromDefinition.isStackable)
+            {
+                int total = fromItemData.amount + toItemData.amount;
+                int maxStack = fromDefinition.maxStackSize;
+
+                if (total <= maxStack)
+                {
+                    toItemData.amount = total;
+                    UpdateDisplayForItem(toItemData);
+                    RemoveItem(fromSlot);
+                }
+                else
+                {
+                    toItemData.amount = maxStack;
+                    fromItemData.amount = total - maxStack;
+                    UpdateDisplayForItem(toItemData);
+                    UpdateDisplayForItem(fromItemData);
+                }
             }
             else
             {
-                inventoryItems[toSlot].amount = maxStackSize;
-                displayItems[toSlot].UpdateAmount(maxStackSize);
-                inventoryItems[fromSlot].amount = total - maxStackSize;
-                displayItems[fromSlot].UpdateAmount(total - maxStackSize);
+                SwapItems(fromSlot, toSlot);
             }
-        }
-        // If different items or not stackable, swap them
-        else
-        {
-            SwapItems(fromSlot, toSlot);
         }
     }
 
     private void SwapItems(int slotA, int slotB)
     {
-        InventoryItem tempItem = inventoryItems[slotA];
-        InventoryDisplayItem tempDisplay = displayItems.ContainsKey(slotA) ? displayItems[slotA] : null;
+        var itemA = GetItemDataInSlot(slotA);
+        var itemB = GetItemDataInSlot(slotB);
 
-        inventoryItems[slotA] = inventoryItems[slotB];
-        displayItems[slotA] = displayItems.ContainsKey(slotB) ? displayItems[slotB] : null;
+        if (itemA != null) itemA.slotIndex = slotB;
+        if (itemB != null) itemB.slotIndex = slotA;
 
-        inventoryItems[slotB] = tempItem;
-        displayItems[slotB] = tempDisplay;
-
-        // Update display items parent and position
-        if (displayItems[slotA] != null)
+        if (displayItems.TryGetValue(slotA, out var displayA) && displayA != null)
         {
-            displayItems[slotA].transform.SetParent(slots[slotA]);
-            displayItems[slotA].transform.localPosition = Vector3.zero;
-            displayItems[slotA].Setup(inventoryItems[slotA], slotA);
+            displayA.transform.SetParent(slots[slotB]);
+            displayA.transform.localPosition = Vector3.zero;
+            if (itemB != null)
+            {
+                var definitionB = GetItemDefinition(itemB.id);
+                if (definitionB != null)
+                {
+                    displayA.Setup(definitionB, itemB, transform);
+                }
+            }
         }
 
-        if (displayItems[slotB] != null)
+        if (displayItems.TryGetValue(slotB, out var displayB) && displayB != null)
         {
-            displayItems[slotB].transform.SetParent(slots[slotB]);
-            displayItems[slotB].transform.localPosition = Vector3.zero;
-            displayItems[slotB].Setup(inventoryItems[slotB], slotB);
+            displayB.transform.SetParent(slots[slotA]);
+            displayB.transform.localPosition = Vector3.zero;
+            if (itemA != null)
+            {
+                var definitionA = GetItemDefinition(itemA.id);
+                if (definitionA != null)
+                {
+                    displayB.Setup(definitionA, itemA, transform);
+                }
+            }
+        }
+
+        if (displayItems.TryGetValue(slotA, out var tempDisplay))
+        {
+            displayItems.Remove(slotA);
+            if (itemB != null) displayItems[slotB] = tempDisplay;
+        }
+
+        if (displayItems.TryGetValue(slotB, out tempDisplay))
+        {
+            displayItems.Remove(slotB);
+            if (itemA != null) displayItems[slotA] = tempDisplay;
         }
     }
 
     private void OnDestroy()
     {
-        if (worldPickableItems == null) return;
-
-        foreach (PickableItem item in worldPickableItems)
+        if (worldPickableItems != null)
         {
-            if (item == null) return;
-            item.OnPickUp -= AddItemToInventory;
+            foreach (PickableItem item in worldPickableItems)
+            {
+                if (item != null)
+                {
+                    item.OnPickUp -= AddItemToInventory;
+                }
+            }
         }
 
-        foreach (InventoryDisplayItem displayItem in displayItems.Values)
+        foreach (var kvp in displayItems)
         {
-            displayItem.OnDragRelease += HandleDragRelease;
-            displayItem.OnPointerEnterEvent += ShowItemDescription;
-            displayItem.OnPointerExitEvent += HideItemDescription;
+            if (kvp.Value != null)
+            {
+                kvp.Value.OnDragRelease -= HandleDragRelease;
+                kvp.Value.OnPointerEnterEvent -= ShowItemDescription;
+                kvp.Value.OnPointerExitEvent -= HideItemDescription;
+            }
         }
     }
 }
