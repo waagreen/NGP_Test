@@ -118,7 +118,7 @@ public class Player : MonoBehaviour
     private void OnCollisionEnter2D(Collision2D collision)
     {
         if ((hurtLayer & (1 << collision.gameObject.layer)) == 0) return;
-        if ((lastHitTime != 0) && Time.time < (lastHitTime + invincibilityTime)) return;
+        if ((lastHitTime != 0) && (Time.time < (lastHitTime + invincibilityTime))) return;
 
         health = Math.Max(0, health - 1);
         OnHurt.Invoke(health);

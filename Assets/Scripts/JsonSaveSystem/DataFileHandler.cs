@@ -40,7 +40,7 @@ public class DataFileHandler
         return loadedData;
     }
 
-    public void Save(SaveData data)
+    public bool Save(SaveData data)
     {
         string fullPath = Path.Combine(dataDirectoryPath, dataFileName);
 
@@ -51,13 +51,20 @@ public class DataFileHandler
             string dataToStore = JsonUtility.ToJson(data, prettyPrint: false);
             using FileStream stream = new(fullPath, FileMode.Create);
             using StreamWriter writer = new(stream);
-           
+
             writer.Write(dataToStore);
+            return true;
         }
         catch (Exception e)
         {
             Debug.LogError("Couldn't properly store the data on: " + fullPath + "\n" + e);
+            return false;
         }
     }
 
+    public void Clear()
+    {
+        SaveData clearData = new();
+        if (Save(clearData)) Debug.Log($"Data cleared <color=#A2E622>SUCCESSFULLY</color>!");
+    }
 }

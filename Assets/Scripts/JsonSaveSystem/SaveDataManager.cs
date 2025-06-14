@@ -32,6 +32,11 @@ public class SaveDataManager : MonoBehaviour
     private List<ISaveData> saveDataObjects;
     private DataFileHandler handler;
 
+    private void CreateHandler()
+    {
+        handler = new DataFileHandler(Application.persistentDataPath, fileName);
+    }
+
     private void Awake()
     {
         Debug.Assert(_instance == null, "More than one instance of SAVE DATA MANAGER", this);
@@ -39,7 +44,7 @@ public class SaveDataManager : MonoBehaviour
 
     private void Start()
     {
-        handler = new DataFileHandler(Application.persistentDataPath, fileName);
+        CreateHandler();
         saveDataObjects = FindAllSaveObjects();
 
         // Always load data on start
@@ -54,6 +59,12 @@ public class SaveDataManager : MonoBehaviour
     public void NewGameData()
     {
         data = new();
+    }
+
+    public void ClearGameData()
+    {
+        if (handler == null) CreateHandler();
+        handler.Clear();
     }
 
     public void LoadGame()
