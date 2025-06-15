@@ -6,6 +6,7 @@ public class SaveDataManager : MonoBehaviour
 {
     [Header("Json storage settings")]
     [SerializeField] private string fileName;
+    [SerializeField] private bool useEncryption;
 
     private static SaveDataManager _instance;
     public static SaveDataManager Instance
@@ -34,7 +35,7 @@ public class SaveDataManager : MonoBehaviour
 
     private void CreateHandler()
     {
-        handler = new DataFileHandler(Application.persistentDataPath, fileName);
+        handler = new DataFileHandler(Application.persistentDataPath, fileName, useEncryption);
     }
 
     private void Awake()
