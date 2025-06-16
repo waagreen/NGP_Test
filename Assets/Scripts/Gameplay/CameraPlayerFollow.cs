@@ -1,5 +1,7 @@
 using UnityEngine;
+using DG.Tweening;
 
+[RequireComponent(typeof(Camera))]
 public class CameraPlayerFollow : MonoBehaviour
 {
     [SerializeField, Range(0f, 1f)] private float smoothTime = 1f;
@@ -8,10 +10,13 @@ public class CameraPlayerFollow : MonoBehaviour
 
     private Transform target;
     private Vector3 velocity;
+    private Camera cam;
+    private Sequence shakeSequence;
 
-    private void Start()
+    private void Setup(Transform target)
     {
-        target = FindFirstObjectByType<Player>().transform;
+        this.target = target;
+        cam = GetComponent<Camera>();
     }
 
     private void LateUpdate()
@@ -20,5 +25,15 @@ public class CameraPlayerFollow : MonoBehaviour
 
         Vector3 targetPosition = new(target.position.x, target.position.y, -cameraDistance);
         transform.position = Vector3.SmoothDamp(transform.position, targetPosition, ref velocity, smoothTime, maxSpeed);
+    }
+
+    public void Shake(int intensity)
+    {
+        shakeSequence?.Kill();
+        shakeSequence = DOTween.Sequence();
+
+        shakeSequence.Append(cam.DOShakePosition(0.1f, 3 - intensity, 5, 45f));
+        shakeSequence.Join(cam.DOShakeRotation(0.1f, 3 - intensity, 5, 45f));
+        shakeSequence.Play();
     }
 }

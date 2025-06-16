@@ -8,8 +8,22 @@ public class UIManager : MonoBehaviour
     [SerializeField] private TMP_Text mainTimer;
     [SerializeField] private Image spawnIntervalTime;
     [SerializeField] private GameObject deathScreen;
-    private Player player;
+
+    private PlayerHealth player;
     private EnemySpawner spawner;
+    private bool gameEnded;
+
+    public void Setup(PlayerHealth player, EnemySpawner spawner)
+    {
+        this.player = player;
+        this.spawner = spawner;
+        gameEnded = false;
+
+        lifeDisplay.UpdateLives(player.Health);
+        player.OnHurt += lifeDisplay.UpdateLives;
+        player.OnHurt += ShowDeathScreen;
+        spawner.OnGameOver += ShowDeathScreen;
+    }
 
     private void UpdateMainTimer()
     {
@@ -29,34 +43,24 @@ public class UIManager : MonoBehaviour
         spawnIntervalTime.fillAmount = progress;
     }
 
-    public void Setup(Player player, EnemySpawner spawner)
-    {
-        this.player = player;
-        this.spawner = spawner;
-
-        player.OnHurt += lifeDisplay.UpdateLives;
-        player.OnHurt += ShowDeathScreen;
-        spawner.OnGameOver += ShowDeathScreen;
-    }
-
     public void ShowDeathScreen(int health)
     {
         if (health > 0) return;
         ShowDeathScreen();
     }
 
-    public void ShowDeathScreen()
+    private void ShowDeathScreen()
     {
+        gameEnded = true;
         deathScreen.SetActive(true);
     }
 
     private void Update()
     {
-        if (spawner != null)
-        {
-            UpdateIntervalTimer();
-            UpdateMainTimer();
-        }
+        if ((spawner == null) || gameEnded) return;
+
+        UpdateIntervalTimer();
+        UpdateMainTimer();
     }
 
     private void OnDestroy()

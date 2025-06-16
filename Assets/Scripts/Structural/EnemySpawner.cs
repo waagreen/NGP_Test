@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class EnemySpawner : MonoBehaviour
+public class EnemySpawner : MonoBehaviour, ISaveData
 {
     [SerializeField] private float spawnRadius = 10f;
     [SerializeField] private float spawnInterval = 10f;
@@ -12,8 +12,10 @@ public class EnemySpawner : MonoBehaviour
     [Header("Enemies settings")]
     [SerializeField] private List<Enemy> aviableEnemies;
 
+    private int currentWave;
     private int enemyCount;
     private int amountToSpawn;
+    private float remainingTimeAtWaveStart;
     private float lastSpawnTime;
     private float currentTime;
     private bool gameOver = false;
@@ -30,18 +32,22 @@ public class EnemySpawner : MonoBehaviour
         killedEnemy.OnDeath -= UpdateBodyCount;
         enemyCount = Mathf.Max(0, enemyCount - 1);
 
+        // Anticipate next wave
         if (enemyCount == 0)
         {
             // Adds time for a wave clear
             currentTime += timeBonus;
+            currentWave++;
 
             OnWaveClear?.Invoke();
-            Spawn(); // Immediately spawn next wave
+            Spawn();
         }
     }
 
     private void Spawn()
     {
+        amountToSpawn = increasePerWave * currentWave;
+
         for (int i = 0; i < amountToSpawn; i++)
         {
             int randomIndex = Random.Range(0, aviableEnemies.Count - 1);
@@ -53,17 +59,24 @@ public class EnemySpawner : MonoBehaviour
 
             spawned.OnDeath += UpdateBodyCount;
         }
-
+        
+        remainingTimeAtWaveStart = currentTime;
         enemyCount = amountToSpawn;
-        amountToSpawn += increasePerWave;
         lastSpawnTime = Time.time;
+    }
+
+    private void EndGame()
+    {
+        gameOver = true;
+        currentTime = 0;
+        currentWave = 0;
+        remainingTimeAtWaveStart = 0f;
+
+        OnGameOver?.Invoke();
     }
 
     private void Start()
     {
-        amountToSpawn = increasePerWave;
-        currentTime = initialTime;
-
         foreach (Enemy e in aviableEnemies)
         {
             CompositeObjectPooler.Instance.InitializeNewQueue(e, amount: 30);
@@ -80,15 +93,14 @@ public class EnemySpawner : MonoBehaviour
 
         if (currentTime <= 0)
         {
-            currentTime = 0;
-            gameOver = true;
-            OnGameOver?.Invoke();
+            EndGame();
             return;
         }
 
-        // Spawn at regular intervals
+        // Spawn wave at the regular interval
         if (Time.time >= (lastSpawnTime + spawnInterval))
         {
+            currentWave++;
             Spawn();
         }
     }
@@ -97,5 +109,17 @@ public class EnemySpawner : MonoBehaviour
     {
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, spawnRadius);
+    }
+
+    public void SaveData(ref SaveData data)
+    {
+        data.currentWave = currentWave;
+        data.remainingTime = remainingTimeAtWaveStart;
+    }
+
+    public void LoadData(SaveData data)
+    {
+        currentWave = Mathf.Max(1, data.currentWave);
+        currentTime = (data.remainingTime > 0f) ? data.remainingTime : initialTime;
     }
 }

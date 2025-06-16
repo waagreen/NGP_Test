@@ -1,36 +1,25 @@
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class CompositeObjectPooler : MonoBehaviour
 {
     private readonly Dictionary<string, Queue<PoolableObject>> pools = new();
 
-    // Only one instance of the pooler can exist at time
     private static CompositeObjectPooler _instance;
-    
-    public static CompositeObjectPooler Instance
-    {
-        get
-        {
-            // If instance is null, try to find one in the scene
-            if (_instance == null)
-            {
-                _instance = FindFirstObjectByType<CompositeObjectPooler>();
-                
-                // If that fails, create one
-                if (_instance == null)
-                {
-                    GameObject singletonObject = new (typeof(CompositeObjectPooler).Name);
-                    _instance = singletonObject.AddComponent<CompositeObjectPooler>();
-                }
-            }
-            return _instance;
-        }
-    }
+    public static CompositeObjectPooler Instance => _instance;
 
     private void Awake()
     {
-        Debug.Assert(_instance == null, "More than one instance of COMPOSITE OBJECT POOLER", this); 
+        if ((_instance != null) && (_instance != this))
+        {
+            Debug.Log("More than one instance of COMPOSITE OBJECT POOLER. <color=#F03C32>Destroying it.</color>");
+            Destroy(this);
+        }
+        else if (_instance == null)
+        {
+            _instance = this;
+        }
     }
 
     private PoolableObject CreateNewObject(PoolableObject obj)

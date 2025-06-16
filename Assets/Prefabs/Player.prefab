@@ -9,7 +9,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6461716731676006635}
+  - component: {fileID: 5796406720497789316}
+  - component: {fileID: 8107993351085428357}
   - component: {fileID: 2503909135869938068}
+  - component: {fileID: 2911317057494481212}
   - component: {fileID: 6922830776713933120}
   - component: {fileID: 3980927493742903331}
   m_Layer: 8
@@ -37,6 +40,40 @@ Transform:
   - {fileID: 6745750527444578668}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5796406720497789316
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 66426713856723402}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8fdd5033632f5640849579b498307e0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  life: {fileID: 8107993351085428357}
+  movement: {fileID: 2503909135869938068}
+  attack: {fileID: 2911317057494481212}
+--- !u!114 &8107993351085428357
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 66426713856723402}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3357c8cea3892a542a97ade6b28170a8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  initialHealth: 3
+  hurtAudio: {fileID: 1062144588040938435}
+  invincibilityTime: 0.25
+  hurtLayer:
+    serializedVersion: 2
+    m_Bits: 640
+  sRenderer: {fileID: 5678271261569793269}
 --- !u!114 &2503909135869938068
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -49,17 +86,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 563a6b4db9039be44ae72d885eb821c6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  health: 3
   maxSpeed: 5
   acceleration: 40
-  projectilePrefab: {fileID: 1725768585554162720, guid: 31e6b08b24d8b7343a11e9e73acf11c6, type: 3}
-  invincibilityTime: 1
-  hurtLayer:
-    serializedVersion: 2
-    m_Bits: 128
   sRenderer: {fileID: 5678271261569793269}
+--- !u!114 &2911317057494481212
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 66426713856723402}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2ce86d02b35818c4eafba14c75fcf846, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  projectilePrefab: {fileID: 1725768585554162720, guid: 31e6b08b24d8b7343a11e9e73acf11c6, type: 3}
   shootAudio: {fileID: 1054057894436386546}
-  hurtAudio: {fileID: 1062144588040938435}
 --- !u!58 &6922830776713933120
 CircleCollider2D:
   m_ObjectHideFlags: 0

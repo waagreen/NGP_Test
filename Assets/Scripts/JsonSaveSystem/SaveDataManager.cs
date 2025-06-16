@@ -9,25 +9,7 @@ public class SaveDataManager : MonoBehaviour
     [SerializeField] private bool useEncryption;
 
     private static SaveDataManager _instance;
-    public static SaveDataManager Instance
-    {
-        get
-        {
-            // If instance is null, try to find one in the scene
-            if (_instance == null)
-            {
-                _instance = FindFirstObjectByType<SaveDataManager>();
-
-                // If that fails, create one
-                if (_instance == null)
-                {
-                    GameObject singletonObject = new(typeof(SaveDataManager).Name);
-                    _instance = singletonObject.AddComponent<SaveDataManager>();
-                }
-            }
-            return _instance;
-        }
-    }
+    public static SaveDataManager Instance => _instance;
 
     private SaveData data;
     private List<ISaveData> saveDataObjects;
@@ -40,16 +22,20 @@ public class SaveDataManager : MonoBehaviour
 
     private void Awake()
     {
-        Debug.Assert(_instance == null, "More than one instance of SAVE DATA MANAGER", this);
-    }
+        if ((_instance != null) && (_instance != this))
+        {
+            Debug.Log("More than one instance of SAVE DATA MANAGER. <color=#F03C32>Destroying it.</color>");
+            Destroy(this);
+        }
+        else if (_instance == null)
+        {
+            _instance = this;
+            CreateHandler();
+            saveDataObjects = FindAllSaveObjects();
 
-    private void Start()
-    {
-        CreateHandler();
-        saveDataObjects = FindAllSaveObjects();
-
-        // Always load data on start
-        LoadGame();
+            // Always load data on start
+            LoadGame();
+        }
     }
 
     private void OnApplicationQuit()
