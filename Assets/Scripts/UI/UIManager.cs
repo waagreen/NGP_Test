@@ -34,12 +34,9 @@ public class UIManager : MonoBehaviour
 
     private void UpdateIntervalTimer()
     {
-        if (spawner == null) return;
-
         float timeUntilNextSpawn = spawner.LastSpawnTime + spawner.SpawnInterval - Time.time;
         float progress = 1 - (timeUntilNextSpawn / spawner.SpawnInterval);
         progress = Mathf.Clamp(progress, 0f, 1f);
-        
         spawnIntervalTime.fillAmount = progress;
     }
 

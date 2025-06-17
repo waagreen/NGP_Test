@@ -15,6 +15,7 @@ public class Enemy : PoolableObject
     [SerializeField, Range(1f, 5f)] private float maxSpeed = 2f;
     [SerializeField, Range(1f, 50f)] private float acceleration = 25f;
     [SerializeField, Range(1f, 3f)] private float chaseSpeedMultiplier = 1f;
+    [SerializeField, Range(0f, 5f)] private float timeToChangeDirection = 1f;
 
     [Header("Perception Setting")]
     [SerializeField] private LayerMask targetMask = -1;
@@ -30,6 +31,7 @@ public class Enemy : PoolableObject
     private Vector2 currentDirection;
     private Vector2 velocity;
     private float currentMaxSpeed;
+    private float timeSinceDirectionChange;
     private int currentHealth;
     private int originalLayer = -1;
     private bool isActive = false;
@@ -84,7 +86,16 @@ public class Enemy : PoolableObject
         if (Mathf.Abs(newDirection.x) < 0.01f) newDirection.x = Random.Range(-0.5f, 0.5f);
         if (Mathf.Abs(newDirection.y) < 0.01f) newDirection.y = Random.Range(-0.5f, 0.5f);
 
-        currentDirection = newDirection.normalized;
+        timeSinceDirectionChange = Time.time;
+        currentDirection = newDirection;
+    }
+
+    private void PickRandomDirection()
+    {
+        float newY = Random.Range(-1f, 1f);
+        float newX = Random.Range(-1f, 1f);
+
+        currentDirection = new(newX, newY);
     }
 
     private void HurtSequence()
@@ -150,7 +161,7 @@ public class Enemy : PoolableObject
             HurtSequence();
         }
     }
-
+    
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if ((targetMask & 1 << (collision.gameObject.layer)) == 0) return;
@@ -170,6 +181,11 @@ public class Enemy : PoolableObject
         if (target == null)
         {
             currentMaxSpeed = maxSpeed;
+            if ((Time.time - timeSinceDirectionChange) > timeToChangeDirection)
+            {
+                PickRandomDirection();
+                timeSinceDirectionChange = Time.time;   
+            }
         }
         else
         {
@@ -181,7 +197,7 @@ public class Enemy : PoolableObject
     private void AdjustVelocity()
     {
         velocity = rb.linearVelocity;
-        Vector2 desiredVelocity = currentMaxSpeed * currentDirection;
+        Vector2 desiredVelocity = currentMaxSpeed * currentDirection.normalized;
 
         float t = acceleration * Time.deltaTime;
         float newX = Mathf.MoveTowards(velocity.x, desiredVelocity.x, t);

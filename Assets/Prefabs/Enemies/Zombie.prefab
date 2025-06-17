@@ -130,6 +130,7 @@ MonoBehaviour:
   maxSpeed: 1.5
   acceleration: 35
   chaseSpeedMultiplier: 1.2
+  timeToChangeDirection: 2
   targetMask:
     serializedVersion: 2
     m_Bits: 256

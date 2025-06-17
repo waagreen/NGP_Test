@@ -27,17 +27,21 @@ public class GameManager : MonoBehaviour
         _inventory = Instantiate(inventoryManagerPrefab, transform);
         _camera = Instantiate(principalCamera, transform);
         _player = Instantiate(playerPrefab, initalSpawnPoint);
-
-        _input.SetupActionMap();
-        _input.OnInventoryToggle += _inventory.ToggleSequence;
-
-        _player.Health.OnHurt += _camera.Shake;
     }
 
     private void Start()
     {
+        // Setup all managers and core components
+        _input.SetupActionMap();
         _player.InitializeComponents(_input);
+
+        _ui.gameObject.SetActive(true);
         _ui.Setup(_player.Health, _spawner);
+
+        _input.OnInventoryToggle += _inventory.ToggleSequence;
+        _player.Health.OnHurt += _camera.Shake;
+
+        _camera.Setup(_player.transform);
     }
 
     private void OnDestroy()

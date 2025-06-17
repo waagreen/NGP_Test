@@ -13,7 +13,9 @@ public class CameraPlayerFollow : MonoBehaviour
     private Camera cam;
     private Sequence shakeSequence;
 
-    private void Setup(Transform target)
+    public Camera Cam => cam;
+
+    public void Setup(Transform target)
     {
         this.target = target;
         cam = GetComponent<Camera>();
@@ -27,13 +29,13 @@ public class CameraPlayerFollow : MonoBehaviour
         transform.position = Vector3.SmoothDamp(transform.position, targetPosition, ref velocity, smoothTime, maxSpeed);
     }
 
-    public void Shake(int intensity)
+    public void Shake(int life)
     {
         shakeSequence?.Kill();
         shakeSequence = DOTween.Sequence();
 
-        shakeSequence.Append(cam.DOShakePosition(0.1f, 3 - intensity, 5, 45f));
-        shakeSequence.Join(cam.DOShakeRotation(0.1f, 3 - intensity, 5, 45f));
+        shakeSequence.Append(cam.DOShakePosition(0.04f, 0.3f, 2, 45f));
+        shakeSequence.SetEase(Ease.InCubic);
         shakeSequence.Play();
     }
 }

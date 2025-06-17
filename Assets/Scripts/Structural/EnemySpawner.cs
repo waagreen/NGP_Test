@@ -33,7 +33,7 @@ public class EnemySpawner : MonoBehaviour, ISaveData
         enemyCount = Mathf.Max(0, enemyCount - 1);
 
         // Anticipate next wave
-        if (enemyCount == 0)
+        if (enemyCount < 1)
         {
             // Adds time for a wave clear
             currentTime += timeBonus;

@@ -39,6 +39,10 @@ public class PlayerHealth : PlayerComponent, ISaveData
         hurtSequence.Join(transform.DORotate(Vector3.forward * 20f, 0.15f));
         hurtSequence.Append(sRenderer.DOColor(Color.white, 0.15f));
         hurtSequence.Join(transform.DORotate(Vector3.zero, 0.15f));
+        hurtSequence.OnComplete(() =>
+        {
+            if (currentHealth < 1) gameObject.SetActive(false);
+        });
 
         hurtSequence.Play();
     }
@@ -54,8 +58,6 @@ public class PlayerHealth : PlayerComponent, ISaveData
 
         hurtAudio.Play();
         HurtSequence();
-
-        if (currentHealth == 0) gameObject.SetActive(false);
     }
 
     public void SaveData(ref SaveData data)
